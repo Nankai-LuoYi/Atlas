@@ -1,6 +1,5 @@
-// 内容依据 Di Bella 等 2021 正文及 Fig. 1–3；观察时间不等同于细胞出生时间。
-const stages = ['E10.5','E11.5','E12.5','E13.5','E14.5','E15.5','E16.5','E17.5','E18.5','P1','P4'];
-const ref = '<a href="/references/#ref-1">[1] Di Bella et al., 2021</a>';
+// 保留 Di Bella 的时间序列；新增研究逐条引用，不合并实验条件。
+const stages = ['E10.5','E11.5','E12.5','E13.5','E14.5','E15.5','E16.5','E17.5','E18.5','P0','P1','P4'];
 const commonPN = ['投射神经元的连续变化','结合祖细胞、迁移及未成熟神经元，理解转录状态的连续性。'];
 const stageData = {
  'E10.5':{title:'从早期祖细胞开始',description:'本研究时间序列的起点。早期样本主要由顶端祖细胞和中间祖细胞构成，为后续皮层细胞多样化提供观察起点。',events:[['观察早期祖细胞','关注 Sox2、Pax6、Hes5 等顶端祖细胞相关表达。'],['认识不同的祖细胞状态','Eomes、Neurog2、Btg2 是文中用于识别中间祖细胞的线索。'],['建立时间坐标','这是本研究的首个采样点，并非整个神经系统发育的起点。']]},
@@ -24,37 +23,114 @@ const cells = {
  interneuron:{title:'抑制性中间神经元',english:'Inhibitory interneurons',markers:'Dlx2 · Gad1 · Gad2',text:'腹侧来源中间神经元进入皮层样本。本文从 E13.5 检测到 MGE 来源相关群体，从 E15.5 检测到 CGE 来源相关群体。这些非皮层起源细胞被排除在本文主要皮层分化轨迹分析之外。',figure:'正文第 1–2 页；Fig. 1'},
  opc:{title:'少突胶质前体细胞',english:'Oligodendrocyte precursor cells · OPC',markers:'Olig1 · Olig2 · Pdgfra',text:'本文在 E17.5 皮层样本中首次观察到 OPC。这是该研究的采样观察，不能据此推断整个脑中 OPC 的最早生成时间，也不能将 OPC 与成熟少突胶质细胞混为一谈。',figure:'正文第 1 页；Fig. 1'}
 };
-let currentStage = stages.includes(new URLSearchParams(location.search).get('stage')) ? new URLSearchParams(location.search).get('stage') : 'E13.5';
+
+// 出生当天的证据来自独立研究，不增加到 Di Bella 的采样覆盖中。
+stageData.P0 = {
+ title:'出生当天，把观察与命运分开',
+ description:'P0 的内容来自独立研究：小鼠皮层 SVZ 中的 EOMES 表达、围出生期群体标记，以及条件敲除后的组织观察。它不是 Di Bella 时间序列中的一个样本。',
+ events:[
+  ['看见 EOMES 阳性细胞','Fig. 4A 展示 P0 小鼠皮层 SVZ 的 EOMES 阳性细胞。单一表达标记不能独立决定最终命运。','p0eomes'],
+  ['围出生期标记，后续追踪','P0/P1 标记群体的后代包含多种细胞；后代在后续时间观察，不能都写成 P0 已成熟。','eomesFate'],
+  ['单独理解基因干预','Map2k1/2 双条件敲除组在 P0 出现 FOXJ1/CRYAB 表达；对应对照未检出，不属于正常发育必经事件。','p0erk']
+ ], refs:[3,2]
+};
+Object.values(cells).forEach(c=>{c.refs=[1];c.notes=['trajectory'];});
+cells.ip.text += ' 围出生期需另看：Li 等的小鼠实验显示，特定 Eomes 阳性标记群体还产生胶质等后代，不能把所有 Eomes 阳性细胞都定义为只产生兴奋性神经元的 IP。';
+cells.ip.refs=[1,3];cells.ip.notes=['trajectory','p0eomes','eomesFate'];
+cells.opc.text += ' 发育来源与观察位置需要分开。Boda 等研究部分背侧和腹侧来源；Winkler 等原始研究支持背侧少突胶质发生在胚胎期已启动。';
+cells.opc.refs=[1,4,5];cells.opc.notes=['trajectory','opcOrigin','opcEmbryo'];
+cells.pn.refs=[1,2];cells.pn.notes=['trajectory','rgModel'];
+cells.astro.refs=[1,2];cells.astro.notes=['trajectory','rgModel'];
+cells.opc.refs=[1,2,4,5];cells.opc.notes=['trajectory','rgModel','opcOrigin','opcEmbryo'];
+Object.assign(cells,extraCells);
+
 const $=id=>document.getElementById(id);
-function evidence(stage){const list=['scRNA-seq'];if(['E12.5','E13.5','E15.5','P1'].includes(stage))list.push('Slide-seq v2');if(['E13.5','E15.5','E18.5'].includes(stage))list.push('scATAC-seq');return list;}
-function renderStage(stage, updateUrl=false){
+const params=new URLSearchParams(location.search);
+const isReferences=location.pathname.startsWith('/references');
+let currentStage=stages.includes(params.get('stage'))?params.get('stage'):'E13.5';
+let currentView=Object.hasOwn(relationshipViews,params.get('view'))?params.get('view'):'trajectory';
+let referenceFilter=['timeline','glia','opc','comparative'].includes(params.get('topic'))?params.get('topic'):'all';
+const escapeHTML=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const paperById=id=>papers.find(p=>p.id===id);
+const sourceLinks=ids=>ids.map(id=>`<a href="/references/#ref-${id}">[${id}] ${paperById(id).short}</a>`).join(' · ');
+const noteButton=(key,label='查看实验与边界')=>`<button class="evidence-link" data-evidence="${key}">${label} ↗</button>`;
+function updateUrl(hash){const url=new URL(location.href);url.pathname='/';url.searchParams.set('stage',currentStage);url.searchParams.set('view',currentView);url.searchParams.delete('cell');url.hash=hash;history.replaceState(null,'',url);}
+function evidence(stage){if(stage==='P0')return ['组织表达观察','群体谱系追踪','基因干预（独立条件）'];const list=['scRNA-seq'];if(['E12.5','E13.5','E15.5','P1'].includes(stage))list.push('Slide-seq v2');if(['E13.5','E15.5','E18.5'].includes(stage))list.push('scATAC-seq');return list;}
+function renderStage(stage,update=false){
  currentStage=stage;const d=stageData[stage];
- $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" aria-label="${s}，${stageData[s].title}"><span class="stage-symbol" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><span class="stage-point"></span><span>${s}</span></button>`).join('');
+ $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s==='P0'?'independent ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" aria-label="${s}，${stageData[s].title}${s==='P0'?'，独立文献证据':''}"><span class="stage-symbol" aria-hidden="true">${s==='P0'?'✦':String(i+1).padStart(2,'0')}</span><span class="stage-point"></span><span>${s}</span></button>`).join('');
  $('stage-badge').textContent=stage;$('stage-title').textContent=d.title;$('stage-description').textContent=d.description;
+ $('stage-citations').innerHTML=(d.refs||[1]).map(id=>`<a href="/references/#ref-${id}" aria-label="参考文献 ${id}">[${id}]</a>`).join(' ');
  $('evidence-tags').innerHTML=evidence(stage).map(s=>`<span>${s}</span>`).join('');
- $('stage-boundary').textContent='证据范围：未来体感皮层 · 本研究采样与推断';
- $('stage-events').innerHTML=d.events.map((e,i)=>`<div class="event"><span class="event-index">0${i+1}</span><div><h3>${e[0]}</h3><p>${e[1]}</p></div></div>`).join('');
+ $('stage-boundary').innerHTML=stage==='P0'?'小鼠皮层 · 来源 [2][3] · 标记与观察时间分开；本节点不提供 P0 scRNA-seq。':'基础来源：[1] Di Bella 2021 · 未来体感皮层。此卡中的“本文/本研究”均指该文。';
+ $('stage-events').innerHTML=d.events.map((e,i)=>`<div class="event"><span class="event-index">0${i+1}</span><div><h3>${e[0]}</h3><p>${e[1]}</p><div class="event-source">${sourceLinks(e[2]?evidenceNotes[e[2]].refs:[1])} ${e[2]?noteButton(e[2]):''}</div></div></div>`).join('');
+ $('stage-context').innerHTML=stage==='P0'?'<strong>读图提示</strong> 三条内容来自不同实验，不代表同一批动物。':'<strong>读图提示</strong> 首次检测 ≠ 首次产生。'+noteButton('trajectory','了解证据类型');
  $('previous-stage').disabled=stage===stages[0];$('next-stage').disabled=stage===stages.at(-1);
- if(updateUrl){history.replaceState(null,'',`/?stage=${encodeURIComponent(stage)}#timeline`);document.querySelector('.stage-button.active').scrollIntoView({block:'nearest',inline:'nearest',behavior:'instant'});}
+ if(update)updateUrl('timeline');
+ requestAnimationFrame(()=>{const b=document.querySelector('.stage-button.active');$('stage-buttons').scrollLeft=b.offsetLeft-($('stage-buttons').clientWidth-b.offsetWidth)/2;});
 }
-function showDetail(html){$('dialog-content').innerHTML=html;if(!$('detail-dialog').open)$('detail-dialog').showModal();}
-function showCell(key){const c=cells[key];showDetail(`<h2>${c.title}</h2><div class="eyebrow">${c.english}</div><div class="evidence-tags">${c.markers.split(' · ').map(x=>`<span>${x}</span>`).join('')}</div><p>${c.text}</p><p>这些 marker 是本文使用或讨论的表达线索，不构成独立、排他的注释规则。</p><p class="dialog-source">${ref} · ${c.figure}</p>`);}
-function showCells(){showDetail('<h2>细胞与 marker</h2><p>先理解细胞状态，再理解表达线索。点击查看适用背景。</p><div class="cell-list">'+Object.entries(cells).map(([k,c])=>`<button data-cell="${k}"><span>${c.title}</span><small>${c.markers} ↗</small></button>`).join('')+'</div>');}
-function showRegion(){showDetail(`<h2>脑区与空间</h2><div class="eyebrow">SOMATOSENSORY CORTEX</div><p>首批内容聚焦未来体感皮层。其他脑区尚待文献整理，不将皮层结果直接推广到整个神经系统。</p><p>本文在 E12.5、E13.5、E15.5 和 P1 采集冠状脑切片的 Slide-seq v2 数据，并用 Tangram 将年龄匹配的单细胞身份映射到组织位置。</p><p>E15.5 的迁移及未成熟兴奋性神经元被细分为五种状态，映射结果显示它们沿皮层径向轴位于不同位置。</p><p class="dialog-source">${ref} · 正文第 2、7 页；Fig. 2。空间映射结果应与直接组织标记实验区别理解。</p>`);}
+function showDetail(html){if($('search-dialog').open)$('search-dialog').close();$('dialog-content').innerHTML=html;$('detail-dialog').scrollTop=0;if(!$('detail-dialog').open)$('detail-dialog').showModal();else $('detail-dialog').querySelector('.dialog-close').focus();}
+function showEvidence(key){const e=evidenceNotes[key];if(!e)return;showDetail(`<div class="eyebrow">EVIDENCE NOTES</div><h2>${e.title}</h2><div class="evidence-tags"><span>${e.type}</span><span>${e.species}</span></div><p>${e.finding}</p><dl class="evidence-facts">${[['区域',e.region],['标记 / 干预',e.label],['取材 / 观察',e.readout],['实验条件',e.condition],['证据位置',e.location]].map(([k,v])=>`<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl><div class="boundary-box"><strong>如何解释</strong><p>${e.limit}</p></div><p class="dialog-source">${sourceLinks(e.refs)}</p>`);}
+function showCell(key){const c=cells[key];if(!c)return;showDetail(`<h2>${c.title}</h2><div class="eyebrow">${c.english}</div><div class="evidence-tags">${c.markers.split(' · ').map(x=>`<span>${x}</span>`).join('')}</div>${c.figure?'<p class="cell-scope">基础条目：[1] Di Bella 2021 · 未来体感皮层；其他来源作为补充。</p>':''}<p>${c.text}</p><p class="fine-print">marker 需结合物种、时期、区域和其他证据；功能命名也不能替代细胞身份验证。</p><div class="note-list">${c.notes.map(k=>noteButton(k,evidenceNotes[k].title)).join('')}</div><p class="dialog-source">${sourceLinks(c.refs)}${c.figure?`<br>[1] ${c.figure}`:''}</p>`);}
+function showCells(){showDetail('<h2>细胞与 marker</h2><p>先理解细胞状态，再理解表达线索。新增的 RG 类型采用作者的功能命名。</p><div class="cell-list">'+Object.entries(cells).map(([k,c])=>`<button data-cell="${k}"><span>${c.title}</span><small>${c.english} ↗</small></button>`).join('')+'</div>');}
+function showRegion(){showDetail(`<h2>脑区与空间</h2><div class="eyebrow">CORTEX · ORIGIN · DESTINATION</div><p>时间轴基础研究聚焦未来体感皮层；新增研究的皮层区域和实验条件另外标注，不直接推广到整个神经系统。</p><p>Di Bella 在 E12.5、E13.5、E15.5、P1 使用 Slide-seq v2，并用 Tangram 将年龄匹配的细胞身份映射到组织位置。${sourceLinks([1])}</p><p>Zhang 的小鼠模型讨论室管膜方向与 Tri-IPC 方向的区域差异。Fig. 7 同时含人图示；本站模型仅展示小鼠框架。${sourceLinks([2])}</p><p>OPC 的“来源区域”与“后来所在位置”分开；OBIN 的目标是嗅球，不是皮层。雪貂与人的 oRG/OSVZ 结果保留在文献页，不套用小鼠日龄。</p>${noteButton('opcOrigin','查看 OPC 来源证据')}`);}
+const node=(key,label)=>`<button class="graph-node" data-cell="${key}"><strong>${label||cells[key].title}</strong><small>${cells[key].english}</small></button>`;
+const arrow=key=>`<button class="graph-arrow" data-evidence="${key}" aria-label="查看这条关系的证据">↓ <span>证据</span></button>`;
+function renderRelationships(view,update=false){
+ currentView=view;const v=relationshipViews[view];
+ $('relationship-tabs').innerHTML=Object.entries(relationshipViews).map(([k,x])=>`<button role="tab" id="tab-${k}" aria-controls="relationship-panel" aria-selected="${k===view}" tabindex="${k===view?0:-1}" data-view="${k}">${x.name}</button>`).join('');
+ $('relationship-panel').setAttribute('aria-labelledby',`tab-${view}`);
+ $('relationship-intro').textContent=v.intro;
+ let graph='';
+ if(view==='trajectory')graph=`<div class="graph-root">${node('ap')}</div><div class="graph-columns two"><div class="graph-column">${arrow('trajectory')}${node('ip')}${arrow('trajectory')}${node('pn')}</div><div class="graph-column lavender">${arrow('trajectory')}${node('glia')}${arrow('trajectory')}${node('astro')}</div></div>`;
+ if(view==='rg')graph=`<div class="model-kicker">小鼠皮层 RG · 按作者框架分为三个方向</div><div class="graph-columns three"><div class="graph-column">${node('nrg','N-RG · 神经发生')}${arrow('rgModel')}${node('pynipc','PyN-IPC')}${arrow('rgModel')}${node('pn')}</div><div class="graph-column sand">${node('erg','E-RG · 室管膜方向')}${arrow('rgModel')}${node('ependymal')}</div><div class="graph-column lavender">${node('trg','T-RG · Tri-IPC 方向')}${arrow('rgModel')}${node('tri','Tri-IPC')}<span class="branch-continuation">下方展开三条分支 ↓</span></div></div><div class="tri-branches"><p>Tri-IPC 下游 · 包含胶质与嗅球神经元方向</p><div class="graph-columns three"><div class="graph-column lavender">${arrow('rgModel')}${node('apc','APC')}${arrow('rgModel')}${node('astro')}</div><div class="graph-column lavender">${arrow('rgModel')}${node('opc','OPC')}${arrow('rgModel')}${node('ol')}</div><div class="graph-column sand">${arrow('rgModel')}${node('obinipc','OBIN-IPC')}${arrow('rgModel')}${node('obin')}<span class="destination">目标脑区：嗅球</span></div></div></div><div class="model-footer">${noteButton('signals','ERK / PKA / YAP / SHH 如何参与')}</div>`;
+ if(view==='opc')graph=`<div class="origin-grid"><article><span class="origin-label">DORSAL ORIGIN</span>${node('dorsal')}<p>胚胎期已经启动，不能统一从 P0 起算。</p>${noteButton('opcEmbryo','时间依据')}</article><article><span class="origin-label">VENTRAL ORIGIN</span>${node('ventral')}<p>当前证据仅覆盖部分来源，不包含 Gsh2 来源 vOPC。</p>${noteButton('opcOrigin','实验范围')}</article></div><div class="origin-shared"><strong>来源 ≠ 当前位置</strong><p>同一区域的 OPC 可以具有不同发育来源。此处不绘制未被本研究验证的完整迁移路线。</p></div><details class="damage-details"><summary>扩展阅读：DNA 损伤下的不同反应</summary><p>Cit-k 缺失或顺铂处理属于干预实验，不能放入正常发育时间轴。</p>${noteButton('opcDamage','查看干预条件')}</details>`;
+ $('relationship-graph').innerHTML=graph;
+ $('relationship-source').innerHTML=`<span>${v.tag} · ${evidenceNotes[v.note].type}</span>${noteButton(v.note,'如何读这张图')}`;
+ if(update)updateUrl('lineage');
+}
+function renderReferences(){
+ const q=$('reference-search').value.trim().toLowerCase();
+ const list=papers.filter(p=>(referenceFilter==='all'||p.topics.includes(referenceFilter))&&`${p.title} ${p.authors} ${p.journal} ${p.year} ${p.doi} ${p.tags.join(' ')} ${p.summary}`.toLowerCase().includes(q));
+ $('reference-count').textContent=`${list.length} / ${papers.length}`;
+ $('reference-list').innerHTML=list.map(p=>`<article class="reference-detail panel" id="ref-${p.id}" tabindex="-1"><div class="paper-meta"><span>[${p.id}] ${p.journal} · ${p.year}</span><span>${p.id===5?'在线追溯原始研究':'正文与关键图已核对'}</span></div><h2>${p.title}</h2><p class="authors">${p.authors}</p><p class="citation-line">${p.journal} ${p.volume} (${p.year}) · DOI: ${p.doi}</p><div class="paper-tags">${p.tags.map(t=>`<span>${t}</span>`).join('')}</div><p>${p.summary}</p><div class="reference-facts">${p.facts.map(([k,v])=>`<div><small>${k}</small><strong>${v}</strong></div>`).join('')}</div><h3>本站关联内容</h3><div class="source-links">${p.links.map(([t,u])=>`<a href="${u}">${t} →</a>`).join('')}</div><details><summary>阅读范围与使用边界</summary><p>${p.boundary}</p></details><div class="reference-actions"><a class="primary" href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer">前往原文 ↗</a><button class="secondary" data-copy="${p.id}">复制引用</button><span class="copy-status" id="copy-status-${p.id}" role="status"></span></div></article>`).join('')||'<div class="empty-state"><h2>没有匹配的文献</h2><p>试试 Eomes、OPC 或作者姓名，也可以清除筛选。</p><button class="secondary" id="reset-references">显示全部文献</button></div>';
+ document.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.filter===referenceFilter));
+}
+function revealReference(){if(!isReferences||!/^#ref-\d+$/.test(location.hash))return;const id=Number(location.hash.slice(5));if(!paperById(id))return;referenceFilter='all';$('reference-search').value='';renderReferences();requestAnimationFrame(()=>$(location.hash.slice(1)).scrollIntoView({block:'start',behavior:'instant'}));}
+function renderSearch(){
+ const q=$('search-input').value.trim().toLowerCase();let results=[];
+ for(const s of stages){if(!q||`${s} ${stageData[s].title}`.toLowerCase().includes(q))results.push(`<a href="/?stage=${s}#timeline">${s} · ${stageData[s].title}<small>发育时期${s==='P0'?' · 独立文献证据':''}</small></a>`);}
+ if(q){for(const [k,c] of Object.entries(cells)){if(`${c.title} ${c.english} ${c.markers} ${c.text}`.toLowerCase().includes(q))results.push(`<button data-cell="${k}">${c.title}<small>${c.english}</small></button>`);}
+ for(const p of papers){if(`${p.short} ${p.title} ${p.authors} ${p.doi} ${p.tags.join(' ')} ${p.summary}`.toLowerCase().includes(q))results.push(`<a href="/references/#ref-${p.id}">${p.short} · ${p.title}<small>参考文献 [${p.id}] · ${p.tags.join(' / ')}</small></a>`);}}
+ $('search-results').innerHTML=results.join('')||'<p>尚未收录匹配内容。可以搜索 P0、Eomes、OPC 或作者姓名。</p>';
+}
+function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();if(!$('search-dialog').open)$('search-dialog').showModal();renderSearch();$('search-input').focus();}
 $('stage-buttons').addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
 $('previous-stage').addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(currentStage)-1)],true));
 $('next-stage').addEventListener('click',()=>renderStage(stages[Math.min(stages.length-1,stages.indexOf(currentStage)+1)],true));
-document.addEventListener('click',e=>{const cell=e.target.closest('[data-cell]');if(cell){if($('search-dialog').open)$('search-dialog').close();showCell(cell.dataset.cell);}if(e.target.closest('.dialog-close'))e.target.closest('dialog').close();});
+$('relationship-tabs').addEventListener('keydown',e=>{const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(currentView);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
+// 动态文献、关系图和弹窗使用委托事件，避免筛选后按钮失效。
+document.addEventListener('click',async e=>{
+ const cell=e.target.closest('[data-cell]');if(cell)showCell(cell.dataset.cell);
+ const note=e.target.closest('[data-evidence]');if(note)showEvidence(note.dataset.evidence);
+ const view=e.target.closest('[data-view]');if(view)renderRelationships(view.dataset.view,true);
+ const filter=e.target.closest('[data-filter]');if(filter){referenceFilter=filter.dataset.filter;renderReferences();}
+ if(e.target.closest('#reset-references')){referenceFilter='all';$('reference-search').value='';renderReferences();}
+ const copy=e.target.closest('[data-copy]');if(copy){const p=paperById(Number(copy.dataset.copy));const citation=`${p.authors} ${p.title}. ${p.journal}. ${p.year};${p.volume}. doi:${p.doi}.`;try{await navigator.clipboard.writeText(citation);$(`copy-status-${p.id}`).textContent='引用已复制';}catch{showDetail(`<h2>复制引用</h2><p>浏览器未允许自动复制，可选中下方文字复制。</p><textarea class="citation-text" readonly aria-label="引用文本">${escapeHTML(citation)}</textarea>`);$('dialog-content').querySelector('textarea').select();}}
+ if(e.target.closest('.dialog-close'))e.target.closest('dialog').close();
+ // 在同页文献锚点导航前关闭弹窗，确保引用目标可见。
+ const a=e.target.closest('a[href]');if(a&&a.getAttribute('href').startsWith('/references/#'))document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+});
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close();}}));
-$('open-cells').addEventListener('click',showCells);$('open-region').addEventListener('click',showRegion);$('reference-space').addEventListener('click',showRegion);
-$('lineage-info').addEventListener('click',()=>showDetail(`<h2>这张关系图表达什么？</h2><p>它是基于本文皮层细胞轨迹组织的简化学习示意，不是完整谱系树。顶端祖细胞、中间祖细胞和投射神经元用于说明神经发生相关状态；另一侧展示胶质相关的转录状态变化。</p><p>分支不与某个胚胎日一一对应，也不表示所有细胞都经过图中的全部节点。本文的 URD 轨迹基于转录相似性和拟时序，不能等同于实验谱系追踪。</p><p>腹侧来源中间神经元、微胶质、血管及脑膜等细胞未被放入这张简图；“未画出”不代表“没有”。</p><p class="dialog-source">${ref} · Fig. 3 与正文第 2–3 页。</p>`));
-const citation='Di Bella DJ, Habibi E, Stickels RR, et al. Molecular logic of cellular diversification in the mouse cerebral cortex. Nature. 2021;595:554–559. doi:10.1038/s41586-021-03670-5.';
-$('copy-citation').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(citation);$('copy-status').textContent='引用已复制';}catch{showDetail('<h2>复制引用</h2><p>浏览器未允许自动复制，可选中以下文字复制。</p><p>'+citation+'</p>');}});
-function renderSearch(){const q=$('search-input').value.trim().toLowerCase();let results=[];for(const s of stages){if(!q||(s+' '+stageData[s].title).toLowerCase().includes(q))results.push(`<a href="/?stage=${s}#timeline">${s} · ${stageData[s].title}<small>发育时期</small></a>`);}for(const [k,c] of Object.entries(cells)){if(q&&(c.title+' '+c.english+' '+c.markers).toLowerCase().includes(q))results.push(`<button data-cell="${k}">${c.title}<small>${c.markers}</small></button>`);}if(q&&('di bella nature 2021 molecular logic cellular cortex 皮层 参考文献').includes(q))results.push('<a href="/references/#ref-1">Di Bella 等 · Molecular logic of cellular diversification…<small>参考文献 · Nature 2021</small></a>');$('search-results').innerHTML=results.slice(0,12).join('')||'<p>尚未收录匹配内容。可以搜索 E13.5、祖细胞或 Sox2。</p>';}
-function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();$('search-dialog').showModal();renderSearch();$('search-input').focus();}
+$('open-cells').addEventListener('click',showCells);$('open-region').addEventListener('click',showRegion);
+$('lineage-info').addEventListener('click',()=>showEvidence(relationshipViews[currentView].note));
+$('reference-search').addEventListener('input',renderReferences);
 $('open-search').addEventListener('click',openSearch);$('search-input').addEventListener('input',renderSearch);
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();openSearch();}});
-const isReferences=location.pathname.startsWith('/references');$('home-page').hidden=isReferences;$('references-page').hidden=!isReferences;
+window.addEventListener('hashchange',revealReference);
+$('home-page').hidden=isReferences;$('references-page').hidden=!isReferences;
 document.querySelector(`[data-nav="${isReferences?'references':'home'}"]`).classList.add('active');
 if(isReferences)document.title='References · 小鼠神经发育图谱';
-renderStage(currentStage);
+renderStage(currentStage);renderRelationships(currentView);renderReferences();
+if(isReferences)revealReference();
+if(!isReferences&&Object.hasOwn(cells,params.get('cell')))showCell(params.get('cell'));
