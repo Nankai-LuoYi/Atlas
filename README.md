@@ -23,7 +23,15 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory dist
 
 打开 `http://127.0.0.1:8765/`。文献页 `/references/`；例如 `/atlas/?stage=P0`、`/lineage/?view=rg`、`/lineage/?cell=ip`。
 
-## 内容与维护
+## GitHub Pages 发布
+
+公开网站地址：https://nankai-luoyi.github.io/Atlas/
+
+仓库 Settings → Pages → Source 选择 GitHub Actions。`.github/workflows/pages.yml` 在每次向 `main` 推送或手动运行时发布网站。`scripts/build_pages.py` 将 `dist` 复制为发布副本，并适配 GitHub Pages 的项目路径；不修改原站点文件。只上传网站文件，不发布仓库中的维护文档。
+
+在仓库 Actions 查看“发布小鼠神经发育图谱”的运行状态，成功后刷新网站。无需设置 Custom domain。生成目录必须是尚不存在的独立目录，以避免覆盖已有文件。
+
+## 内容文件
 
 - `dist/app.js`：基础时期、原有细胞条目和交互逻辑。
 - `dist/evidence.js`：文献、逐条证据、新增细胞与关系视图配置。

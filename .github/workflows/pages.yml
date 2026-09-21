@@ -1,0 +1,37 @@
+name: 发布小鼠神经发育图谱
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: 配置 Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: 适配网站路径
+        env:
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: python3 scripts/build_pages.py --base-path "$PAGES_BASE_PATH"
+      - name: 上传网站文件
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .pages-output
+      - name: 发布
+        id: deployment
+        uses: actions/deploy-pages@v4
