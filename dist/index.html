@@ -4,14 +4,14 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>小鼠神经发育图谱 · Mouse Neurodevelopment Atlas</title>
   <meta name="description" content="沿时间轴探索小鼠皮层发育，连接细胞类型、发育关系与文献证据。">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='12' fill='%232d60c7'/%3E%3Cpath d='M10 30L20 20L12 9M20 20L30 10M20 20L30 29' fill='none' stroke='white' stroke-width='2'/%3E%3Ccircle cx='20' cy='20' r='5' fill='white'/%3E%3C/svg%3E">
+  <link rel="icon" href="/assets/atlas-mark.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/style.css?v=3"><script src="/evidence.js?v=3" defer></script><script src="/app.js?v=3" defer></script>
 </head>
 <body>
 <a href="#main" class="skip">跳转到主要内容</a>
 <header class="header"><div class="header-inner">
-  <a class="brand" href="/"><span class="brand-icon" aria-hidden="true">✳</span><span><strong>小鼠神经发育图谱</strong><small>MOUSE NEURODEVELOPMENT ATLAS</small></span></a>
-  <nav aria-label="主导航"><a href="/" data-nav="home">首页</a><a href="/atlas/" data-nav="atlas">发育图谱</a><a href="/lineage/" data-nav="lineage">细胞关系</a><a href="/references/" data-nav="references">References <span>↗</span></a></nav>
+  <a class="brand" href="/"><img class="brand-icon" src="/assets/atlas-mark.svg" width="36" height="36" alt=""><span><strong>小鼠神经发育图谱</strong><small>MOUSE NEURODEVELOPMENT ATLAS</small></span></a>
+  <nav aria-label="主导航"><a href="/" data-nav="home">首页</a><a href="/atlas/" data-nav="atlas">发育图谱</a><a href="/lineage/" data-nav="lineage">细胞关系</a><a href="/references/" data-nav="references">参考文献</a></nav>
   <button class="search-trigger" id="open-search"><span aria-hidden="true">⌕</span> 搜索时期、细胞或文献 <kbd>/</kbd></button>
 </div></header>
 <main id="main"><noscript><p class="wrap">时间轴与文献筛选需要 JavaScript，请启用后查看。</p></noscript>
@@ -37,7 +37,7 @@
 </div>
 <section id="references-page" class="wrap reference-page" hidden><div class="eyebrow">THE READING COLLECTION</div><h1>参考文献 <span>References</span></h1><div id="reference-list"></div></section>
 </main>
-<footer class="footer wrap"><div><strong>小鼠神经发育图谱</strong><span>从时间出发，探索神经发育。</span></div><p>学习与文献整理 · 持续生长中</p><a href="/references/">References ↗</a></footer>
+<footer class="footer wrap"><div><strong>小鼠神经发育图谱</strong><span>从时间出发，探索神经发育。</span></div><p>v0.1 · Mouse cortex · E10.5–P4</p><a href="/references/">参考文献</a></footer>
 <dialog id="detail-dialog"><div class="dialog-top"><span class="eyebrow">ATLAS NOTES</span><button class="dialog-close" aria-label="关闭详情">×</button></div><div id="dialog-content"></div></dialog>
-<dialog id="search-dialog"><div class="dialog-top"><label for="search-input">搜索图谱</label><button class="dialog-close" aria-label="关闭搜索">×</button></div><input type="search" id="search-input" placeholder="试试 P0、Eomes、OPC、Zhang…" autocomplete="off"><div id="search-results"></div></dialog>
+<dialog id="search-dialog" aria-label="搜索图谱"><div class="dialog-top"><label for="search-input">搜索图谱</label><button class="dialog-close" aria-label="关闭搜索">×</button></div><input type="search" id="search-input" placeholder="试试 P0、Eomes、OPC、Zhang…" autocomplete="off"><div id="search-results"></div></dialog>
 </body></html>

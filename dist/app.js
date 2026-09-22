@@ -412,7 +412,7 @@ window.addEventListener('hashchange',revealReference);
 $('home-page').hidden=isReferences;$('references-page').hidden=!isReferences;
 document.querySelector(`[data-nav="${pageName}"]`).classList.add('active');
 document.body.dataset.page=pageName;
-const pageTitles={home:'小鼠神经发育图谱',atlas:'发育图谱',lineage:'细胞关系',references:'References'};
+const pageTitles={home:'小鼠神经发育图谱',atlas:'发育图谱',lineage:'细胞关系',references:'参考文献'};
 document.title=pageTitles[pageName]+' · Mouse Neurodevelopment Atlas';
 document.querySelector('[data-nav="'+pageName+'"]').setAttribute('aria-current','page');
 $('page-intro').hidden=!['atlas','lineage'].includes(pageName);

@@ -155,3 +155,9 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 #home-lineage-preview small{display:block;font-size:10px;color:var(--muted);margin-top:5px}
 @media(max-width:1050px){.home-entrances{grid-template-columns:1fr}}
 @media(max-width:767px){body[data-page=home] .hero h1{font-size:38px}body[data-page=home] .hero{padding-top:24px}body[data-page=home] .stage-section{grid-template-columns:1fr}#home-lineage-preview{gap:5px}#home-lineage-preview a{font-size:12px;padding:14px 4px}}
+
+/* 全站身份和键盘反馈。 */
+.brand img.brand-icon{width:36px;height:36px;flex:none;object-fit:contain}
+:where(a,button,input,select,summary):focus-visible{outline:2px solid #6689bc;outline-offset:3px}
+.reference-entry:target{background:#f4f8fe;border-left:2px solid #87a2c6;padding-left:16px}
+@media(max-width:767px){.brand img.brand-icon{width:30px;height:30px}}
