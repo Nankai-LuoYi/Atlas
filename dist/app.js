@@ -332,12 +332,16 @@ function showAtlasEvent(id){
  const fields=[['已整理时间范围',time.stageRange],['标记时期',time.labelingStage],['观察时期',time.observationStage]].filter(([,value])=>value!==null);
  showDetail(`<h2>${escapeHTML(event.title)}</h2><p>${escapeHTML(event.description)}</p><p>此条目在 ${escapeHTML(event.displayStage)} 阶段页面中展示；展示位置不等于事件发生时间。</p>${fields.map(([label,value])=>`<p>${label}：${escapeHTML(Array.isArray(value)?value.join(' / '):value)}</p>`).join('')}${evidenceButton(event.evidenceIds)}`);
 }
+let renderedSelection='';
 function renderAtlasWorkspace(){
  const focus=document.activeElement;const focusCell=focus?.dataset.cell,focusRelation=focus?.dataset.relation,focusView=focus?.dataset.view,focusStage=focus?.dataset.stage;
  const scroll=$('atlas-graph-scroll');const scrollLeft=scroll.scrollLeft;
  if($('search-dialog').open)$('search-dialog').close();if($('detail-dialog').open)$('detail-dialog').close();
  renderAtlasControls();$('atlas-context-title').textContent=(pageName==='lineage'?'':state.stage+' · ')+relationshipViews[state.view].name;
  renderAtlasGraph();renderStage(state.stage);if($('stage-events'))renderAtlasEvents();renderAtlasDetails();scroll.scrollLeft=scrollLeft;
+ const selectionKey=state.view+':'+(state.selectedCell||state.selectedRelation||'');
+ if(selectionKey!==renderedSelection&&scroll.scrollWidth>scroll.clientWidth){const chosen=$('atlas-graph').querySelector('.atlas-node.is-selected')||$('atlas-graph').querySelector('.atlas-node.is-related');if(chosen)scroll.scrollLeft=chosen.offsetLeft-(scroll.clientWidth-chosen.offsetWidth)/2;}
+ renderedSelection=selectionKey;
  const focusTarget=focusCell?$('atlas-graph').querySelector(`[data-cell="${focusCell}"]`):focusRelation?$('atlas-graph').querySelector(`[data-relation="${focusRelation}"]`):focusView?$('relationship-tabs').querySelector(`[data-view="${focusView}"]`):focusStage?$('stage-buttons').querySelector(`[data-stage="${focusStage}"]`):null;
  focusTarget?.focus({preventScroll:true});
 }
@@ -397,13 +401,16 @@ function renderSearch(){
  $('search-results').innerHTML=`<p class="search-status" role="status">${q?(count?`${count} 个匹配对象`:'尚未收录匹配内容。试试 P0、IP、Tri-IPC 或 Zhang。'):'选择一个时期开始，或输入细胞、关系或文献关键词。'}</p>`+[...groups].map(([group,items])=>`<section class="search-group"><h2>${group}</h2>${items.map(item=>`<a href="${siteBase}${item.path}">${escapeHTML(item.label)}<small>${escapeHTML(item.description)}</small></a>`).join('')}</section>`).join('');
 }
 $('search-dialog').addEventListener('keydown',e=>{
+ if(e.key==='Escape'){e.preventDefault();$('search-dialog').close();return;}
  const links=[...$('search-results').querySelectorAll('a')];const index=links.indexOf(document.activeElement);
  if(['ArrowDown','ArrowUp'].includes(e.key)&&links.length){e.preventDefault();links[(index+(e.key==='ArrowDown'?1:-1)+links.length)%links.length].focus();}
  if(e.key==='Enter'&&document.activeElement===$('search-input')&&links.length){e.preventDefault();links[0].click();}
 });
 // Event 深链接只决定打开哪条已收录记录；不改变其科学时间字段。
 function revealUrlEvent(){const id=new URLSearchParams(location.search).get('event');if(id&&events[id])showAtlasEvent(id);}
-function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();if(!$('search-dialog').open)$('search-dialog').showModal();renderSearch();$('search-input').focus();}
+let searchOpener=null;
+$('search-dialog').addEventListener('close',()=>{if(searchOpener?.isConnected)searchOpener.focus({preventScroll:true});});
+function openSearch(){searchOpener=document.activeElement;if($('detail-dialog').open)$('detail-dialog').close();if(!$('search-dialog').open)$('search-dialog').showModal();renderSearch();$('search-input').focus();}
 $('stage-buttons')?.addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
 $('previous-stage')?.addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(state.stage)-1)],true));
 $('next-stage')?.addEventListener('click',()=>renderStage(stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)],true));
