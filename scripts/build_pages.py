@@ -28,13 +28,6 @@ for path in source.rglob('*'):
     # 静态入口与脚本动态生成的站内链接一并添加项目路径。
     text = re.sub(r'((?:href|src)=[\"\'])/(?!/)', lambda m: m[1] + base + '/', text)
     text = re.sub(r'(url\([\"\']?)/(?!/)', lambda m: m[1] + base + '/', text)
-    if path.name == 'app.js':
-        text = text.replace('location.pathname.startsWith(', 'sitePath.startsWith(')
-        text = 'const sitePath=location.pathname.slice(' + str(len(base)) + ');\n' + text
-        old = "url.pathname=pageName==='home'?'/':`/${pageName}/`;"
-        if text.count(old) != 1:
-            raise ValueError('URL 更新逻辑已变化，请检查路径适配')
-        text = text.replace(old, "url.pathname='" + base + "'+(pageName==='home'?'/':`/${pageName}/`);")
     target.write_text(text, encoding='utf-8')
 (output / '.nojekyll').write_text('', encoding='utf-8')
 print('GitHub Pages 发布副本已生成：' + str(output))

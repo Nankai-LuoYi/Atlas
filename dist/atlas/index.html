@@ -15,33 +15,25 @@
   <button class="search-trigger" id="open-search"><span aria-hidden="true">⌕</span> 搜索时期、细胞或文献 <kbd>/</kbd></button>
 </div></header>
 <main id="main"><noscript><p class="wrap">时间轴与文献筛选需要 JavaScript，请启用后查看。</p></noscript>
-<section class="page-intro wrap" id="page-intro" hidden><div class="eyebrow">MOUSE NEURODEVELOPMENT ATLAS</div><h1 id="page-title"></h1><p id="page-description"></p></section>
-<div id="home-page">
-  <section class="hero wrap">
-    <div class="hero-copy"><div class="eyebrow">从时间出发，理解生命的形成</div><h1>探索小鼠<br><span>神经发育的脉络</span></h1><p class="hero-subtitle">从胚胎时期，到细胞命运。</p><p class="hero-description">沿着发育时间轴，连接脑的结构、细胞的变化与分子特征，一起探索从胚胎到出生的发育过程。</p><div class="hero-actions"><a class="primary" href="/atlas/">探索发育图谱 <span>→</span></a><a class="text-link" href="/references/">阅读参考文献 ↗</a></div><div class="scope"><span class="scope-dot"></span> 当前聚焦：小鼠皮层 · E10.5–P4</div></div>
-    <div class="hero-visual"><div class="image-halo"></div><img id="embryo-art" src="/assets/embryo.png" alt="小鼠胚胎艺术示意，蓝色区域突出头部；不对应精确分期"><div class="art-caption"><span>发育，从细微处开始</span><small>概念插图 · 非精确分期图</small></div><div class="visual-note"><span>EMBRYO → CORTEX</span><p>每一个时期，<br>都是新的可能。</p><div class="note-line"></div><small>时间 · 空间 · 细胞</small></div></div>
+<section class="page-intro wrap" id="page-intro" hidden><div class="eyebrow">MOUSE NEURODEVELOPMENT ATLAS</div><h1 id="page-title"></h1><p id="page-description"></p><span class="atlas-range">Mouse · Cortex · E10.5–P4</span></section>
+<div id="home-page" class="atlas-workspace wrap">
+  <aside class="atlas-controls" aria-label="图谱控制">
+    <section><label class="eyebrow" for="atlas-stage">DEVELOPMENTAL STAGE</label><div class="atlas-stage-control"><button id="atlas-prev" aria-label="上一个时期">‹</button><select id="atlas-stage" aria-label="发育时期"></select><button id="atlas-next" aria-label="下一个时期">›</button></div></section>
+    <section><h2 class="eyebrow" id="atlas-view-label">RELATIONSHIP VIEW</h2><select id="atlas-view-select" aria-labelledby="atlas-view-label"></select><div id="relationship-tabs" class="atlas-view-controls" role="group" aria-label="选择细胞关系图"></div></section>
+    <section class="atlas-scope"><h2 class="eyebrow">SCOPE</h2><dl><dt>Species</dt><dd>Mouse</dd><dt>Region</dt><dd>Cortex</dd><dt>Stage range</dt><dd>E10.5–P4</dd></dl><p>以皮层为起点；来源与后代所在区域分别解释。</p></section>
+  </aside>
+  <section class="atlas-map" id="lineage" aria-labelledby="atlas-context-title">
+    <div class="atlas-map-heading"><span class="eyebrow">RELATIONSHIP MAP</span><h2 id="atlas-context-title"></h2><p>时期与关系模型分别控制上下文；模型节点不代表该时期均有直接观察。</p></div>
+    <div id="atlas-graph-legend" class="atlas-graph-legend"></div>
+    <div id="atlas-graph-scroll" class="atlas-graph-scroll" tabindex="0" aria-label="细胞关系图，可在内部横向滚动"><div id="atlas-graph" class="atlas-graph"></div></div>
+    <p id="atlas-graph-note" class="atlas-graph-note"></p>
   </section>
-  <section class="timeline-section wrap" id="timeline" aria-labelledby="timeline-title">
-    <div class="section-top"><div><span class="eyebrow">DEVELOPMENTAL TIMELINE</span><h2 id="timeline-title">沿时间，探索发育</h2></div><p>选择一个时期，查看对应的皮层发育内容</p></div>
+  <aside class="atlas-details" aria-label="选中对象详情"><div class="atlas-detail-heading"><span class="eyebrow">SELECTED OBJECT</span><button id="atlas-clear" class="text-link" hidden>清除选择</button></div><div id="atlas-detail-content"></div></aside>
+  <section class="atlas-events" aria-labelledby="atlas-events-heading"><div class="atlas-section-heading"><h2 id="atlas-events-heading">当前时期记录</h2><span id="stage-badge"></span></div><h3 id="stage-title"></h3><p id="stage-description"></p><div id="stage-events"></div></section>
+  <section class="timeline-section atlas-timeline" id="timeline" aria-labelledby="timeline-title">
+    <div class="section-top"><div><span class="eyebrow">DEVELOPMENTAL TIMELINE</span><h2 id="timeline-title">发育时间轴</h2></div><p>点击胚胎示意切换时期</p></div>
     <div class="timeline-shell"><button id="previous-stage" class="circle-button" aria-label="上一个时期">‹</button><div class="timeline" id="stage-buttons" role="group" aria-label="发育时期"></div><button id="next-stage" class="circle-button" aria-label="下一个时期">›</button></div>
     <div class="timeline-legend"><span><i class="legend-dot"></i>胚胎期</span><span><i class="legend-dot post"></i>出生后</span><span class="timeline-footnote">发育形态示意 · 点击图像切换时期</span></div>
-  </section>
-  <section class="stage-section wrap" id="stage-section" aria-labelledby="stage-title">
-    <div class="stage-overview"><div class="stage-heading"><span class="stage-badge" id="stage-badge">E13.5</span><span class="muted">当前发育时期</span></div><h2 id="stage-title"></h2><p id="stage-description"></p></div>
-    <div class="stage-content"><div class="mini-heading"><h3>这一时期，关注什么</h3><span>皮层发育 · 学习要点</span></div><div id="stage-events"></div></div>
-  </section>
-  <section class="explore-section wrap"><div class="explore-label">继续探索 <span>EXPLORE THE ATLAS</span></div><div class="explore-grid">
-    <a href="/atlas/" class="explore-card"><span class="card-icon blue">◷</span><div><small>Explore by</small><h3>发育时期</h3><p>从连续采样中理解变化</p></div><span class="arrow">↗</span></a>
-    <button class="explore-card" id="open-region"><span class="card-icon purple">◈</span><div><small>Explore by</small><h3>脑区与空间</h3><p>从体感皮层开始探索</p></div><span class="arrow">↗</span></button>
-    <a href="/lineage/" class="explore-card"><span class="card-icon blue">⑂</span><div><small>Explore by</small><h3>细胞发育关系</h3><p>连接祖细胞与分化状态</p></div><span class="arrow">↗</span></a>
-    <button class="explore-card" id="open-cells"><span class="card-icon purple">⠿</span><div><small>Explore by</small><h3>细胞与 marker</h3><p>理解细胞身份的线索</p></div><span class="arrow">↗</span></button>
-  </div></section>
-  <section class="bottom-grid wrap">
-    <article class="lineage-panel panel" id="lineage"><div class="panel-top"><div><span class="eyebrow">CELLULAR RELATIONSHIPS</span><h2>从祖细胞，到不同命运</h2></div><button class="text-link" id="lineage-info">如何读图 ↗</button></div>
-      <div class="relationship-tabs" id="relationship-tabs" role="tablist" aria-label="选择细胞关系图"></div>
-      <div id="relationship-panel" role="tabpanel" tabindex="0"><p class="panel-description" id="relationship-intro"></p><div id="relationship-graph"></div></div>
-    </article>
-    <article class="references-panel panel"><div class="panel-top"><div><span class="eyebrow">LITERATURE</span><h2>参考文献</h2></div><a class="text-link" href="/references/">全部文献 ↗</a></div><div class="reading-list" id="home-reading-list"></div></article>
   </section>
 </div>
 <section id="references-page" class="wrap reference-page" hidden><div class="eyebrow">THE READING COLLECTION</div><h1>参考文献 <span>References</span></h1><div id="reference-list"></div></section>

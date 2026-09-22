@@ -59,3 +59,65 @@ const relationshipViews = {
   rg:{name:'RG 分化模型',tag:'Zhang · 2026',intro:'按作者框架展开不同方向；不是某一日龄的全部细胞，也不是统一命名标准。',note:'rgModel'},
   opc:{name:'OPC 来源',tag:'Boda · 2022 / Winkler · 2018',intro:'发育来源与后来所在区域是两个维度。以下对照不代表全部 OPC 来源。',note:'opcOrigin'}
 };
+
+// 关系类型是证据语义，不从箭头形状推断实验验证。
+const relationshipTypes = ['lineage_tracing','computational_trajectory','author_model','developmental_observation','other','unknown'];
+const relations = [
+  ['ap','ip','trajectory'],['ip','pn','trajectory'],['ap','glia','trajectory'],['glia','astro','trajectory'],
+  ['nrg','pynipc','rg'],['pynipc','pn','rg'],['erg','ependymal','rg'],['trg','tri','rg'],
+  ['tri','apc','rg'],['apc','astro','rg'],['tri','opc','rg'],['opc','ol','rg'],['tri','obinipc','rg'],['obinipc','obin','rg']
+].map(([source,target,view])=>({id:`relation_${view}_${source}_${target}`,source,target,view,
+  relationshipType:view==='trajectory'?'computational_trajectory':'author_model',
+  evidenceIds:[view==='trajectory'?'trajectory':'rgModel']}));
+// OPC 来源比较不新增方向性关系。视图成员包含尚无方向边的对象。
+const viewCellIds = {
+  trajectory:['ap','ip','pn','glia','astro'],
+  rg:['nrg','pynipc','pn','erg','ependymal','trg','tri','apc','astro','opc','ol','obinipc','obin'],
+  opc:['dorsal','ventral']
+};
+// 事件 ID 独立于展示标题。没有明确对象或证据关联的字段保留为空。
+const eventKeys = {
+  'E10.5':['ap','ip','scope'], 'E11.5':['cajal_retzius','progenitors','origin'],
+  'E12.5':['continuity','deep_layers','spatial'], 'E13.5':['branches','mge','modalities'],
+  'E14.5':['upper_layers','continuity','identity'], 'E15.5':['migration','cge','modalities'],
+  'E16.5':['continuity','upper_layers','regional_variation'], 'E17.5':['opc','astro','detection'],
+  'E18.5':['glia','chromatin','perinatal'], 'P0':['eomes_expression','eomes_followup','erk_intervention'],
+  'P1':['deep_layers','callosal','age'], 'P4':['identity','trajectory','maturation']
+};
+const eventAssociations = {
+  event_E10_5_ap:{cellIds:['ap']}, event_E10_5_ip:{cellIds:['ip']},
+  event_E13_5_mge:{cellIds:['interneuron']}, event_E15_5_cge:{cellIds:['interneuron']},
+  event_E17_5_opc:{cellIds:['opc']}, event_E17_5_astro:{cellIds:['astro']},
+  // EOMES 阳性标记群体不自动等同于 ip，后续后代也不作为 P0 已存在的细胞。
+  event_P0_eomes_expression:{evidenceIds:['p0eomes'],temporalContext:{observationStage:'P0'},stageEvidenceLinks:[{stage:'P0',evidenceId:'p0eomes',role:'direct_observation'}]},
+  event_P0_eomes_followup:{evidenceIds:['eomesFate'],temporalContext:{labelingStage:['P0','P1']}},
+  event_P0_erk_intervention:{evidenceIds:['p0erk'],temporalContext:{observationStage:'P0'},stageEvidenceLinks:[{stage:'P0',evidenceId:'p0erk',role:'condition_observation'}]}
+};
+
+// 关联角色只限定此记录支持当前对象的哪一部分，不等于整套属性或 marker 已验证。
+const evidenceRoles = {
+ direct_observation:'直接观察', relationship_support:'关系支持',
+ condition_observation:'条件观察', context:'背景信息', limitation:'限制说明'
+};
+const cellEvidenceLinks = {
+ ap:[['trajectory','relationship_support','简化转录状态关系；不逐项验证 marker 或具体时期。']],
+ ip:[['trajectory','relationship_support','皮层神经发生的连续状态；不是唯一必经路线。'],['p0eomes','context','EOMES 阳性表达不独立证明 IP 身份。'],['eomesFate','limitation','标记群体的多类后代不能证明全部 Eomes 阳性细胞属于 IP。']],
+ pn:[['trajectory','relationship_support','转录状态关系，不等于实验谱系。'],['rgModel','relationship_support','作者模型中的后代方向，不覆盖全部亚型和 marker。']],
+ glia:[['trajectory','relationship_support','胶质相关转录分支，不代表成熟胶质细胞。']],
+ astro:[['trajectory','relationship_support','胶质相关状态关系，未建立逐时期直接关联。'],['rgModel','relationship_support','作者模型中的星形胶质方向。']],
+ interneuron:[['trajectory','limitation','非皮层起源中间神经元被排除在主要皮层分化轨迹分析之外；本关联不支持其属于该轨迹。']],
+ opc:[['trajectory','context','皮层图谱背景，不据此建立 OPC 的直接轨迹或出生时期。'],['rgModel','relationship_support','作者模型中的 OPC 方向。'],['opcOrigin','relationship_support','特定遗传来源与组织观察；对照和 Cit-k 缺失条件需分开。'],['opcEmbryo','context','仅补充背侧来源的胚胎期时间边界，不推广到所有 OPC。']],
+ nrg:[['rgModel','relationship_support','作者模型中的神经发生方向。'],['signals','context','信号干预背景，不构成 N-RG 全部属性的直接证据。']],
+ erg:[['rgModel','relationship_support','作者模型中的室管膜方向。'],['p0erk','context','基因干预背景，不是正常 E-RG 身份的直接观察。']],
+ trg:[['rgModel','relationship_support','作者模型中的 Tri-IPC 生成方向。'],['signals','context','状态依赖的信号干预背景。']],
+ tri:[['rgModel','relationship_support','作者综合模型；不证明每个细胞单克隆三潜能。']],
+ pynipc:[['rgModel','relationship_support','作者模型中的锥体神经元方向。'],['eomesFate','context','后代追踪不能证明必经 PyN-IPC 中间状态。']],
+ apc:[['rgModel','relationship_support','作者模型中的星形胶质方向，不扩大为普遍实验验证。']],
+ ependymal:[['rgModel','relationship_support','作者模型中的 E-RG 后代方向。'],['p0erk','condition_observation','Map2k1/2 双条件敲除后的 FOXJ1/CRYAB 表达；不等于正常 P0 成熟室管膜状态。']],
+ obinipc:[['rgModel','relationship_support','作者模型中的嗅球中间神经元方向。'],['eomesFate','context','后代追踪不能证明必经 OBIN-IPC 中间状态。']],
+ obin:[['eomesFate','condition_observation','特定 Eomes 标记群体的后续嗅球后代；不是 P0 已成熟。']],
+ ol:[['rgModel','relationship_support','作者模型中的 OPC 下游方向。'],['eomesFate','condition_observation','特定标记群体的后续少突胶质后代，不证明髓鞘成熟或 P0 已存在。']],
+ dorsal:[['opcOrigin','relationship_support','特定背侧遗传来源；对照和损伤条件分别解释。'],['opcEmbryo','relationship_support','背侧来源在胚胎期参与少突胶质发生，不指定统一最早日龄。']],
+ ventral:[['opcOrigin','relationship_support','仅研究覆盖的腹侧遗传来源，不包括 Gsh2 来源。'],['opcDamage','condition_observation','Cit-k 缺失或顺铂损伤条件，不作为正常发育事件。']]
+};
+for(const [id,links] of Object.entries(cellEvidenceLinks))cellEvidenceLinks[id]=links.map(([evidenceId,role,scope])=>({evidenceId,role,scope}));
