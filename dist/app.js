@@ -196,7 +196,7 @@ function renderStage(stage,update=false){
  const d=stageData[stage];
  $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s==='P0'?'independent ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" ${s===stage?'aria-current="step"':''} aria-label="${s}，${stageData[s].title}"><span class="stage-illustration" role="img" aria-label="${s} 小鼠发育形态示意" style="background-position:${(i%6)*20}% ${i<6?0:100}%"></span><span class="stage-point"></span><span>${s}</span></button>`).join('');
  $('stage-badge').textContent=stage;$('stage-title').textContent=d.title;$('stage-description').textContent=d.description;
- $('stage-events').innerHTML=d.events.map((e,i)=>`<div class="event"><span class="event-index">0${i+1}</span><div><h3>${escapeHTML(e.title)}</h3><p>${escapeHTML(e.description)}</p>${evidenceButton(e.evidenceIds)}</div></div>`).join('');
+ if($('stage-events'))$('stage-events').innerHTML=d.events.map((e,i)=>`<div class="event"><span class="event-index">0${i+1}</span><div><h3>${escapeHTML(e.title)}</h3><p>${escapeHTML(e.description)}</p>${evidenceButton(e.evidenceIds)}</div></div>`).join('');
  $('previous-stage').disabled=stage===stages[0];$('next-stage').disabled=stage===stages.at(-1);
 
  requestAnimationFrame(()=>{const b=document.querySelector('.stage-button.active');$('stage-buttons').scrollLeft=b.offsetLeft-($('stage-buttons').clientWidth-b.offsetWidth)/2;});
@@ -354,6 +354,7 @@ function renderState(){
  if(isExplorer){renderAtlasWorkspace();return;}
  const focus=document.activeElement;const stageFocus=focus?.dataset.stage;const viewFocus=focus?.dataset.view;
  renderStage(state.stage);renderRelationships(state.view);
+ document.querySelectorAll('[data-atlas-entry]').forEach(a=>a.href=siteBase+'atlas/?stage='+encodeURIComponent(state.stage));
  if(stageFocus)document.querySelector(`[data-stage="${stageFocus}"]`)?.focus({preventScroll:true});
  if(viewFocus)document.querySelector(`[data-view="${viewFocus}"]`)?.focus({preventScroll:true});
  if(state.selectedRelation)showRelation(state.selectedRelation);
@@ -362,20 +363,13 @@ function renderState(){
 }
 function showCells(){showDetail('<h2>细胞与 marker</h2><p>先理解细胞状态，再理解表达线索。RG 类型也可以按功能方向理解。</p><div class="cell-list">'+Object.entries(cells).map(([k,c])=>`<button data-cell="${k}"><span>${c.title}</span><small>${c.english} ↗</small></button>`).join('')+'</div>');}
 function showRegion(){showDetail('<h2>脑区与空间</h2><div class="eyebrow">CORTEX · ORIGIN · DESTINATION</div><p>当前从小鼠皮层开始探索。结合细胞身份与组织位置，可以观察不同细胞沿皮层径向轴的分布。</p><p>发育来源与后来所在位置需要分开：部分细胞从腹侧区域迁入皮层，部分皮层来源祖细胞的后代则进入嗅球。</p><p>不同脑区的发育进程并不同步。</p>');}
-const node=(key,label)=>`<button class="graph-node" data-cell="${key}"><strong>${label||cells[key].title}</strong><small>${cells[key].english}</small></button>`;
-const arrow=id=>{const r=relations.find(x=>x.id===id);return `<button class="graph-arrow" data-relation="${id}" aria-label="查看${cells[r.source].title}到${cells[r.target].title}的关系">↓</button>`;};
+// 首页预览仅取既有转录关系；完整关系渲染器由 Atlas 和 Lineage 共用。
 function renderRelationships(view,update=false){
  if(update){setState({view});return;}
- const v=relationshipViews[view];
- $('relationship-tabs').innerHTML=Object.entries(relationshipViews).map(([k,x])=>`<button role="tab" id="tab-${k}" aria-controls="relationship-panel" aria-selected="${k===view}" tabindex="${k===view?0:-1}" data-view="${k}">${x.name}</button>`).join('');
- $('relationship-panel').setAttribute('aria-labelledby',`tab-${view}`);
- $('relationship-intro').textContent=view==='rg'?'展开神经元、室管膜、胶质与嗅球相关的分化方向。':view==='opc'?'把细胞的发育来源与所在区域联系起来。':v.intro;
- let graph='';
- if(view==='trajectory')graph=`<div class="graph-root">${node('ap')}</div><div class="graph-columns two"><div class="graph-column">${arrow('relation_trajectory_ap_ip')}${node('ip')}${arrow('relation_trajectory_ip_pn')}${node('pn')}</div><div class="graph-column lavender">${arrow('relation_trajectory_ap_glia')}${node('glia')}${arrow('relation_trajectory_glia_astro')}${node('astro')}</div></div>`;
- if(view==='rg')graph=`<div class="model-kicker">小鼠皮层 RG · 三个分化方向</div><div class="graph-columns three"><div class="graph-column">${node('nrg','N-RG · 神经发生')}${arrow('relation_rg_nrg_pynipc')}${node('pynipc','PyN-IPC')}${arrow('relation_rg_pynipc_pn')}${node('pn')}</div><div class="graph-column sand">${node('erg','E-RG · 室管膜方向')}${arrow('relation_rg_erg_ependymal')}${node('ependymal')}</div><div class="graph-column lavender">${node('trg','T-RG · Tri-IPC 方向')}${arrow('relation_rg_trg_tri')}${node('tri','Tri-IPC')}<span class="branch-continuation">下方展开三条分支 ↓</span></div></div><div class="tri-branches"><p>Tri-IPC 下游 · 包含胶质与嗅球神经元方向</p><div class="graph-columns three"><div class="graph-column lavender">${arrow('relation_rg_tri_apc')}${node('apc','APC')}${arrow('relation_rg_apc_astro')}${node('astro')}</div><div class="graph-column lavender">${arrow('relation_rg_tri_opc')}${node('opc','OPC')}${arrow('relation_rg_opc_ol')}${node('ol')}</div><div class="graph-column sand">${arrow('relation_rg_tri_obinipc')}${node('obinipc','OBIN-IPC')}${arrow('relation_rg_obinipc_obin')}${node('obin')}<span class="destination">目标脑区：嗅球</span></div></div></div><div class="model-footer">${noteButton('signals','ERK / PKA / YAP / SHH 如何参与')}</div>`;
- if(view==='opc')graph=`<div class="origin-grid"><article><span class="origin-label">DORSAL ORIGIN</span>${node('dorsal')}<p>胚胎期已经启动，不能统一从 P0 起算。</p>${noteButton('opcEmbryo','时间依据')}</article><article><span class="origin-label">VENTRAL ORIGIN</span>${node('ventral')}<p>当前证据仅覆盖部分来源，不包含 Gsh2 来源 vOPC。</p>${noteButton('opcOrigin','实验范围')}</article></div><div class="origin-shared"><strong>来源 ≠ 当前位置</strong><p>同一区域的 OPC 可以具有不同发育来源。此处不绘制未被本研究验证的完整迁移路线。</p></div><details class="damage-details"><summary>扩展阅读：DNA 损伤下的不同反应</summary><p>Cit-k 缺失或顺铂处理属于干预实验，不能放入正常发育时间轴。</p>${noteButton('opcDamage','查看干预条件')}</details>`;
- $('relationship-graph').innerHTML=graph;
-
+ const preview=$('home-lineage-preview');if(!preview)return;
+ const edges=relations.filter(r=>r.view==='trajectory').slice(0,2);
+ const ids=[edges[0].source,...edges.map(r=>r.target)];
+ preview.innerHTML=ids.map((id,i)=>`${i?'<span aria-hidden="true">⇢</span>':''}<a href="${siteBase}lineage/?view=trajectory&cell=${id}">${cells[id].name}<small>${cells[id].english}</small></a>`).join('');
 }
 function renderReferences(){
  $('reference-list').innerHTML=papers.map(p=>`<article class="reference-entry" id="ref-${p.id}" tabindex="-1"><h2><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer">${p.title}</a></h2><p class="reference-authors">${p.authors}</p><p class="reference-publication"><span>${p.journal}</span><time>${p.year}</time></p></article>`).join('');
@@ -392,7 +386,7 @@ function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();if(!
 $('stage-buttons')?.addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
 $('previous-stage')?.addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(state.stage)-1)],true));
 $('next-stage')?.addEventListener('click',()=>renderStage(stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)],true));
-$('relationship-tabs').addEventListener('keydown',e=>{if(isExplorer)return;const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(state.view);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
+$('relationship-tabs')?.addEventListener('keydown',e=>{if(isExplorer)return;const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(state.view);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
 // 动态文献、关系图和弹窗使用委托事件，避免筛选后按钮失效。
 document.addEventListener('click',async e=>{
  const cell=e.target.closest('[data-cell]');if(cell)showCell(cell.dataset.cell);

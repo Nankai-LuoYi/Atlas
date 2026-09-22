@@ -18,7 +18,7 @@
 <section class="page-intro wrap" id="page-intro" hidden><div class="eyebrow">MOUSE NEURODEVELOPMENT ATLAS</div><h1 id="page-title"></h1><p id="page-description"></p></section>
 <div id="home-page">
   <section class="hero wrap">
-    <div class="hero-copy"><div class="eyebrow">从时间出发，理解生命的形成</div><h1>探索小鼠<br><span>神经发育的脉络</span></h1><p class="hero-subtitle">从胚胎时期，到细胞命运。</p><p class="hero-description">沿着发育时间轴，连接脑的结构、细胞的变化与分子特征，一起探索从胚胎到出生的发育过程。</p><div class="hero-actions"><a class="primary" href="/atlas/">探索发育图谱 <span>→</span></a><a class="text-link" href="/references/">阅读参考文献 ↗</a></div><div class="scope"><span class="scope-dot"></span> 当前聚焦：小鼠皮层 · E10.5–P4</div></div>
+    <div class="hero-copy"><div class="eyebrow">MOUSE NEURODEVELOPMENT ATLAS</div><h1>小鼠<br><span>神经发育图谱</span></h1><p class="hero-subtitle">时间 · 细胞状态 · 发育关系</p><p class="hero-description">从 E10.5 到 P4，沿时间探索皮层细胞状态、发育关系与证据。</p><div class="hero-actions"><a class="primary" href="/atlas/" data-atlas-entry>进入发育图谱 <span>→</span></a><a class="text-link" href="/lineage/">探索细胞关系 →</a></div><div class="scope"><span class="scope-dot"></span> Mouse · Cortex · E10.5–P4</div></div>
     <div class="hero-visual"><div class="image-halo"></div><img id="embryo-art" src="/assets/embryo.png" alt="小鼠胚胎艺术示意，蓝色区域突出头部；不对应精确分期"><div class="art-caption"><span>发育，从细微处开始</span><small>概念插图 · 非精确分期图</small></div><div class="visual-note"><span>EMBRYO → CORTEX</span><p>每一个时期，<br>都是新的可能。</p><div class="note-line"></div><small>时间 · 空间 · 细胞</small></div></div>
   </section>
   <section class="timeline-section wrap" id="timeline" aria-labelledby="timeline-title">
@@ -28,20 +28,11 @@
   </section>
   <section class="stage-section wrap" id="stage-section" aria-labelledby="stage-title">
     <div class="stage-overview"><div class="stage-heading"><span class="stage-badge" id="stage-badge">E13.5</span><span class="muted">当前发育时期</span></div><h2 id="stage-title"></h2><p id="stage-description"></p></div>
-    <div class="stage-content"><div class="mini-heading"><h3>这一时期，关注什么</h3><span>皮层发育 · 学习要点</span></div><div id="stage-events"></div></div>
+    <a class="text-link home-stage-entry" href="/atlas/" data-atlas-entry>进入这一时期的发育图谱 →</a>
   </section>
-  <section class="explore-section wrap"><div class="explore-label">继续探索 <span>EXPLORE THE ATLAS</span></div><div class="explore-grid">
-    <a href="/atlas/" class="explore-card"><span class="card-icon blue">◷</span><div><small>Explore by</small><h3>发育时期</h3><p>从连续采样中理解变化</p></div><span class="arrow">↗</span></a>
-    <button class="explore-card" id="open-region"><span class="card-icon purple">◈</span><div><small>Explore by</small><h3>脑区与空间</h3><p>从体感皮层开始探索</p></div><span class="arrow">↗</span></button>
-    <a href="/lineage/" class="explore-card"><span class="card-icon blue">⑂</span><div><small>Explore by</small><h3>细胞发育关系</h3><p>连接祖细胞与分化状态</p></div><span class="arrow">↗</span></a>
-    <button class="explore-card" id="open-cells"><span class="card-icon purple">⠿</span><div><small>Explore by</small><h3>细胞与 marker</h3><p>理解细胞身份的线索</p></div><span class="arrow">↗</span></button>
-  </div></section>
-  <section class="bottom-grid wrap">
-    <article class="lineage-panel panel" id="lineage"><div class="panel-top"><div><span class="eyebrow">CELLULAR RELATIONSHIPS</span><h2>从祖细胞，到不同命运</h2></div><button class="text-link" id="lineage-info">如何读图 ↗</button></div>
-      <div class="relationship-tabs" id="relationship-tabs" role="tablist" aria-label="选择细胞关系图"></div>
-      <div id="relationship-panel" role="tabpanel" tabindex="0"><p class="panel-description" id="relationship-intro"></p><div id="relationship-graph"></div></div>
-    </article>
-    <article class="references-panel panel"><div class="panel-top"><div><span class="eyebrow">LITERATURE</span><h2>参考文献</h2></div><a class="text-link" href="/references/">全部文献 ↗</a></div><div class="reading-list" id="home-reading-list"></div></article>
+  <section class="bottom-grid wrap home-entrances">
+    <article class="lineage-panel panel"><div class="panel-top"><div><span class="eyebrow">CELL RELATIONSHIPS</span><h2>从状态，理解发育关系</h2></div><a class="text-link" href="/lineage/">探索关系 →</a></div><div id="home-lineage-preview"></div><p class="panel-description">转录状态关系示意；计算轨迹不等于实验谱系追踪。</p></article>
+    <article class="references-panel panel"><div class="panel-top"><div><span class="eyebrow">LITERATURE</span><h2>参考文献</h2></div><a class="text-link" href="/references/">浏览文献 →</a></div><p class="panel-description">查看当前收录论文的题目、作者与发表信息。</p><div class="reading-list" id="home-reading-list"></div></article>
   </section>
 </div>
 <section id="references-page" class="wrap reference-page" hidden><div class="eyebrow">THE READING COLLECTION</div><h1>参考文献 <span>References</span></h1><div id="reference-list"></div></section>
