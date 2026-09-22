@@ -383,7 +383,8 @@ function renderSearch(){
  const add=(group,label,description,path)=>{if(!groups.has(group))groups.set(group,[]);groups.get(group).push({label,description,path});};
  for(const stage of stages)if(!q||`${stage} ${stageData[stage].title}`.toLowerCase().includes(q))add('Stage',stage,stageData[stage].title,`atlas/?stage=${stage}`);
  if(q){
-  for(const [id,c] of Object.entries(cells)){
+  const exactCell=([id,c])=>[id,c.name,...c.english.split(' · ')].some(text=>text.toLowerCase()===q);
+  for(const [id,c] of Object.entries(cells).sort((a,b)=>Number(exactCell(b))-Number(exactCell(a)))){
    const identity=`${id} ${c.name} ${c.english}`.toLowerCase().includes(q);const marker=c.markers.toLowerCase().includes(q);
    if(identity||marker)add('Cell / State',c.name,c.english+(marker&&!identity?' · Marker text match':''),`atlas/?view=${cellView(id)}&cell=${id}`);
   }
