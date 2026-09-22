@@ -192,14 +192,15 @@ function evidence(stage){if(stage==='P0')return ['组织表达观察','群体谱
 function renderStage(stage,update=false){
  if(update){setState({stage});return;}
  const d=stageData[stage];
- $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s==='P0'?'independent ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" aria-label="${s}，${stageData[s].title}"><span class="stage-illustration" role="img" aria-label="${s} 小鼠发育形态示意" style="background-position:${(i%6)*20}% ${i<6?0:100}%"></span><span class="stage-point"></span><span>${s}</span></button>`).join('');
+ $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s==='P0'?'independent ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" ${s===stage?'aria-current="step"':''} aria-label="${s}，${stageData[s].title}"><span class="stage-illustration" role="img" aria-label="${s} 小鼠发育形态示意" style="background-position:${(i%6)*20}% ${i<6?0:100}%"></span><span class="stage-point"></span><span>${s}</span></button>`).join('');
  $('stage-badge').textContent=stage;$('stage-title').textContent=d.title;$('stage-description').textContent=d.description;
  $('stage-events').innerHTML=d.events.map((e,i)=>`<div class="event"><span class="event-index">0${i+1}</span><div><h3>${escapeHTML(e.title)}</h3><p>${escapeHTML(e.description)}</p>${evidenceButton(e.evidenceIds)}</div></div>`).join('');
  $('previous-stage').disabled=stage===stages[0];$('next-stage').disabled=stage===stages.at(-1);
 
  requestAnimationFrame(()=>{const b=document.querySelector('.stage-button.active');$('stage-buttons').scrollLeft=b.offsetLeft-($('stage-buttons').clientWidth-b.offsetWidth)/2;});
 }
-function showDetail(html){if($('search-dialog').open)$('search-dialog').close();$('dialog-content').innerHTML=html;$('detail-dialog').scrollTop=0;if(!$('detail-dialog').open)$('detail-dialog').showModal();else $('detail-dialog').querySelector('.dialog-close').focus();}
+let detailOpener=null;
+function showDetail(html){if(!$('detail-dialog').open)detailOpener=document.activeElement;if($('search-dialog').open)$('search-dialog').close();$('dialog-content').innerHTML=html;const heading=$('dialog-content').querySelector('h2');if(heading){heading.id='detail-title';$('detail-dialog').setAttribute('aria-labelledby','detail-title');}$('detail-dialog').scrollTop=0;if(!$('detail-dialog').open)$('detail-dialog').showModal();else $('detail-dialog').querySelector('.dialog-close').focus();}
 function showEvidence(keys,cellId=null){
  const ids=uniqueEvidenceIds(Array.isArray(keys)?keys:String(keys).split(','));if(!ids.length)return;
  const cards=ids.map(id=>{const e=evidenceNotes[id];if(!e)return '';
@@ -406,7 +407,8 @@ document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if
 $('open-cells')?.addEventListener('click',showCells);$('open-region')?.addEventListener('click',showRegion);
 $('lineage-info')?.addEventListener('click',()=>showEvidence(relationshipViews[state.view].note));
 $('open-search').addEventListener('click',openSearch);$('search-input').addEventListener('input',renderSearch);
-document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();openSearch();}});
+document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();openSearch();}});
+$('detail-dialog').addEventListener('close',()=>{if(detailOpener?.isConnected)detailOpener.focus({preventScroll:true});});
 function closeDetail(){if(pageName==='atlas'){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
 $('detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeDetail();});
 window.addEventListener('popstate',()=>{state=readUrlState();canonicalizeSelectionUrl();if($('search-dialog').open)$('search-dialog').close();renderState();revealReference();});
