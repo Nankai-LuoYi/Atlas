@@ -132,6 +132,7 @@ const $=id=>document.getElementById(id);
 const siteBase=new URL('.',document.currentScript.src).pathname;
 const sitePath='/'+location.pathname.slice(siteBase.length);
 const pageName=sitePath.startsWith('/references')?'references':sitePath.startsWith('/atlas')?'atlas':sitePath.startsWith('/lineage')?'lineage':'home';
+const isExplorer=['atlas','lineage'].includes(pageName);
 const isReferences=pageName==='references';
 function readUrlState(){
  const p=new URLSearchParams(location.search);
@@ -191,6 +192,7 @@ window.Atlas={data:atlasData,getState:()=>structuredClone(state),setState,covera
 function evidence(stage){if(stage==='P0')return ['组织表达观察','群体谱系追踪','基因干预（独立条件）'];const list=['scRNA-seq'];if(['E12.5','E13.5','E15.5','P1'].includes(stage))list.push('Slide-seq v2');if(['E13.5','E15.5','E18.5'].includes(stage))list.push('scATAC-seq');return list;}
 function renderStage(stage,update=false){
  if(update){setState({stage});return;}
+ if(!$('stage-buttons'))return;
  const d=stageData[stage];
  $('stage-buttons').innerHTML=stages.map((s,i)=>`<button class="stage-button ${s[0]==='P'?'post ':''}${s==='P0'?'independent ':''}${s===stage?'active':''}" data-stage="${s}" aria-pressed="${s===stage}" ${s===stage?'aria-current="step"':''} aria-label="${s}，${stageData[s].title}"><span class="stage-illustration" role="img" aria-label="${s} 小鼠发育形态示意" style="background-position:${(i%6)*20}% ${i<6?0:100}%"></span><span class="stage-point"></span><span>${s}</span></button>`).join('');
  $('stage-badge').textContent=stage;$('stage-title').textContent=d.title;$('stage-description').textContent=d.description;
@@ -333,23 +335,23 @@ function renderAtlasWorkspace(){
  const focus=document.activeElement;const focusCell=focus?.dataset.cell,focusRelation=focus?.dataset.relation,focusView=focus?.dataset.view,focusStage=focus?.dataset.stage;
  const scroll=$('atlas-graph-scroll');const scrollLeft=scroll.scrollLeft;
  if($('search-dialog').open)$('search-dialog').close();if($('detail-dialog').open)$('detail-dialog').close();
- renderAtlasControls();$('atlas-context-title').textContent=state.stage+' · '+relationshipViews[state.view].name;
- renderAtlasGraph();renderStage(state.stage);renderAtlasEvents();renderAtlasDetails();scroll.scrollLeft=scrollLeft;
+ renderAtlasControls();$('atlas-context-title').textContent=(pageName==='lineage'?'':state.stage+' · ')+relationshipViews[state.view].name;
+ renderAtlasGraph();renderStage(state.stage);if($('stage-events'))renderAtlasEvents();renderAtlasDetails();scroll.scrollLeft=scrollLeft;
  const focusTarget=focusCell?$('atlas-graph').querySelector(`[data-cell="${focusCell}"]`):focusRelation?$('atlas-graph').querySelector(`[data-relation="${focusRelation}"]`):focusView?$('relationship-tabs').querySelector(`[data-view="${focusView}"]`):focusStage?$('stage-buttons').querySelector(`[data-stage="${focusStage}"]`):null;
  focusTarget?.focus({preventScroll:true});
 }
-if(pageName==='atlas'){
+if(isExplorer){
  $('atlas-stage').addEventListener('change',e=>setState({stage:e.target.value}));
  $('atlas-view-select').addEventListener('change',e=>setState({view:e.target.value}));
  // 仅响应画布宽度变化，调整显示尺寸，不修改选择或 URL。
- let previousWidth=0;new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(width===previousWidth)return;previousWidth=width;renderAtlasGraph();const active=$('stage-buttons').querySelector('.active');if(active)$('stage-buttons').scrollLeft=active.offsetLeft-($('stage-buttons').clientWidth-active.offsetWidth)/2;}).observe($('atlas-graph-scroll'));
+ let previousWidth=0;new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(width===previousWidth)return;previousWidth=width;renderAtlasGraph();const active=$('stage-buttons')?.querySelector('.active');if(active)$('stage-buttons').scrollLeft=active.offsetLeft-($('stage-buttons').clientWidth-active.offsetWidth)/2;}).observe($('atlas-graph-scroll'));
  $('atlas-prev').addEventListener('click',()=>setState({stage:stages[Math.max(0,stages.indexOf(state.stage)-1)]}));
  $('atlas-next').addEventListener('click',()=>setState({stage:stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)]}));
  $('atlas-clear').addEventListener('click',()=>setState({selectedCell:null,selectedRelation:null}));
  $('atlas-graph').addEventListener('keydown',e=>{if(e.target.matches('[data-relation]')&&['Enter',' '].includes(e.key)){e.preventDefault();setState({selectedRelation:e.target.dataset.relation});}});
 }
 function renderState(){
- if(pageName==='atlas'){renderAtlasWorkspace();return;}
+ if(isExplorer){renderAtlasWorkspace();return;}
  const focus=document.activeElement;const stageFocus=focus?.dataset.stage;const viewFocus=focus?.dataset.view;
  renderStage(state.stage);renderRelationships(state.view);
  if(stageFocus)document.querySelector(`[data-stage="${stageFocus}"]`)?.focus({preventScroll:true});
@@ -387,10 +389,10 @@ function renderSearch(){
  $('search-results').innerHTML=results.join('')||'<p>尚未收录匹配内容。可以搜索 P0、Eomes、OPC 或作者姓名。</p>';
 }
 function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();if(!$('search-dialog').open)$('search-dialog').showModal();renderSearch();$('search-input').focus();}
-$('stage-buttons').addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
-$('previous-stage').addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(state.stage)-1)],true));
-$('next-stage').addEventListener('click',()=>renderStage(stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)],true));
-$('relationship-tabs').addEventListener('keydown',e=>{if(pageName==='atlas')return;const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(state.view);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
+$('stage-buttons')?.addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
+$('previous-stage')?.addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(state.stage)-1)],true));
+$('next-stage')?.addEventListener('click',()=>renderStage(stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)],true));
+$('relationship-tabs').addEventListener('keydown',e=>{if(isExplorer)return;const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(state.view);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
 // 动态文献、关系图和弹窗使用委托事件，避免筛选后按钮失效。
 document.addEventListener('click',async e=>{
  const cell=e.target.closest('[data-cell]');if(cell)showCell(cell.dataset.cell);
@@ -398,7 +400,7 @@ document.addEventListener('click',async e=>{
  const note=e.target.closest('[data-evidence]');if(note)showEvidence(note.dataset.evidence,note.dataset.evidenceCell);
  const view=e.target.closest('[data-view]');if(view)renderRelationships(view.dataset.view,true);
  const relation=e.target.closest('[data-relation]');if(relation)setState({selectedRelation:relation.dataset.relation,selectedCell:null});
- const back=e.target.closest('[data-return-cell]');if(back){if(pageName==='atlas'){$('detail-dialog').close();$('atlas-detail-content').scrollIntoView({block:'nearest'});}else showCell(back.dataset.returnCell,false);}
+ const back=e.target.closest('[data-return-cell]');if(back){if(isExplorer){$('detail-dialog').close();$('atlas-detail-content').scrollIntoView({block:'nearest'});}else showCell(back.dataset.returnCell,false);}
  if(e.target.closest('.dialog-close')){const d=e.target.closest('dialog');if(d.id==='detail-dialog')closeDetail();else d.close();}
  // 在同页文献锚点导航前关闭弹窗，确保引用目标可见。
  const a=e.target.closest('a[href]');if(a&&a.getAttribute('href').startsWith('/references/#'))document.querySelectorAll('dialog[open]').forEach(d=>d.close());
@@ -409,7 +411,7 @@ $('lineage-info')?.addEventListener('click',()=>showEvidence(relationshipViews[s
 $('open-search').addEventListener('click',openSearch);$('search-input').addEventListener('input',renderSearch);
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();openSearch();}});
 $('detail-dialog').addEventListener('close',()=>{if(detailOpener?.isConnected)detailOpener.focus({preventScroll:true});});
-function closeDetail(){if(pageName==='atlas'){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
+function closeDetail(){if(isExplorer){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
 $('detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeDetail();});
 window.addEventListener('popstate',()=>{state=readUrlState();canonicalizeSelectionUrl();if($('search-dialog').open)$('search-dialog').close();renderState();revealReference();});
 window.addEventListener('hashchange',revealReference);

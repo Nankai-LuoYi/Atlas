@@ -131,3 +131,16 @@ body[data-page=atlas] .page-intro h1{font-family:var(--sans);font-size:30px;marg
 
 /* v0.1：详情内容变化时为滚动条保留位置，稳定桌面列宽。 */
 @media(min-width:1180px){.atlas-details{scrollbar-gutter:stable}}
+
+/* Lineage 与 Atlas 复用图与详情，仅改变工作区排列。 */
+body[data-page=lineage] .page-intro{width:min(1640px,calc(100% - 64px));padding:20px 0}
+body[data-page=lineage] .page-intro h1{font:600 26px/1.5 var(--sans);margin:5px 0}
+body[data-page=lineage] .page-intro p{font-size:13px}
+.lineage-workspace{grid-template-columns:minmax(0,1fr) 336px;grid-template-areas:'controls controls' 'map details';gap:0}
+.lineage-workspace .atlas-controls{position:static;display:flex;align-items:start;gap:36px;padding:14px 20px;border-right:0;border-bottom:1px solid var(--line)}
+.lineage-workspace .atlas-controls section+section{margin:0}.lineage-workspace .atlas-controls section:first-child{flex:1}
+.lineage-workspace .atlas-view-controls{display:flex;gap:10px;margin-top:8px}.lineage-workspace .atlas-view-controls button{min-height:40px}
+.lineage-workspace .atlas-stage-control{margin-top:8px;max-width:220px}.lineage-workspace .atlas-scope{display:none}
+.lineage-workspace .atlas-map{padding:18px 22px}.lineage-workspace .atlas-details{padding:20px;border-left:1px solid var(--line)}
+@media(max-width:1024px){.lineage-workspace{display:flex}.lineage-workspace .atlas-controls{display:grid;grid-template-columns:1fr 1fr;gap:24px;padding:14px 0}.lineage-workspace .atlas-view-controls{display:none}.lineage-workspace .atlas-details{border-left:0;padding:20px 0}.lineage-workspace .atlas-map{padding:18px 0}.lineage-workspace .atlas-stage-control{max-width:none}}
+@media(max-width:767px){body[data-page=lineage] .page-intro{width:calc(100% - 36px)}.lineage-workspace .atlas-controls{display:flex;flex-direction:column;gap:15px}.lineage-workspace .atlas-controls section{width:100%}}
