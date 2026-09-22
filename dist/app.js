@@ -208,7 +208,7 @@ function showEvidence(keys,cellId=null){
  const cards=ids.map(id=>{const e=evidenceNotes[id];if(!e)return '';
   const links=cellId?(cells[cellId]?.evidenceLinks||[]).filter(link=>link.evidenceId===id):[];
   const fields=[...links.map(link=>['与当前 Cell 的关联角色',`${evidenceRoles[link.role]} (${link.role}) · ${link.scope}`]),['Evidence type',e.type],['Species',e.species],['Region',e.region],['Developmental time',e.stage],['Labeling / intervention time',e.label],['Observation time',e.readout],['Experimental condition',e.condition],['Finding',e.finding],['Limitation',e.limit],['证据位置',e.location]];
-  const papersHtml=[...new Set(e.refs||[])].map(paperById).filter(Boolean).map(p=>`<a href="https://doi.org/${encodeURI(p.doi)}" target="_blank" rel="noopener noreferrer">${escapeHTML(p.title)}</a> · ${escapeHTML(p.authors)} · ${escapeHTML(p.journal)} ${escapeHTML(p.year)}`).join('<br>');
+  const papersHtml=[...new Set(e.refs||[])].map(paperById).filter(Boolean).map(p=>`<a href="https://doi.org/${encodeURI(p.doi)}" target="_blank" rel="noopener noreferrer">${escapeHTML(p.title)} ↗</a> · ${escapeHTML(p.authors)} · ${escapeHTML(p.journal)} ${escapeHTML(p.year)}<br><a class="evidence-reference" href="${siteBase}references/#ref-${p.id}">查看参考文献 →</a>`).join('<br>');
   return `<article class="evidence-record" data-evidence-id="${id}"><h3>${escapeHTML(e.title)}</h3><dl class="evidence-facts">${papersHtml?`<div><dt>Paper</dt><dd>${papersHtml}</dd></div>`:''}${fields.filter(([,v])=>v).map(([k,v])=>`<div><dt>${k}</dt><dd>${escapeHTML(v)}</dd></div>`).join('')}</dl></article>`;
  }).join('');
  showDetail(`<h2>Evidence · ${ids.length}</h2><p>数量表示去重的关联记录总数，包含背景与限制说明，不代表直接证据数、论文数、独立实验次数或可信度。</p>${state.selectedCell?`<button class="text-link" data-return-cell="${state.selectedCell}">返回细胞详情</button>`:''}${cards}`);
@@ -374,7 +374,7 @@ function renderRelationships(view,update=false){
 function renderReferences(){
  $('reference-list').innerHTML=papers.map(p=>`<article class="reference-entry" id="ref-${p.id}" tabindex="-1"><h2><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer">${p.title}</a></h2><p class="reference-authors">${p.authors}</p><p class="reference-publication"><span>${p.journal}</span><time>${p.year}</time></p></article>`).join('');
 }
-function revealReference(){if(isReferences&&/^#ref-\d+$/.test(location.hash)){const target=$(location.hash.slice(1));if(target)requestAnimationFrame(()=>target.scrollIntoView({block:'start',behavior:'instant'}));}}
+function revealReference(){if(isReferences&&/^#ref-\d+$/.test(location.hash)){const target=$(location.hash.slice(1));if(target)requestAnimationFrame(()=>{target.scrollIntoView({block:'start',behavior:'instant'});target.focus({preventScroll:true});});}}
 function renderSearch(){
  const q=$('search-input').value.trim().toLowerCase();let results=[];
  for(const s of stages){if(!q||`${s} ${stageData[s].title}`.toLowerCase().includes(q))results.push(`<a href="/atlas/?stage=${s}#timeline">${s} · ${stageData[s].title}<small>发育时期</small></a>`);}
@@ -397,7 +397,7 @@ document.addEventListener('click',async e=>{
  const back=e.target.closest('[data-return-cell]');if(back){if(isExplorer){$('detail-dialog').close();$('atlas-detail-content').scrollIntoView({block:'nearest'});}else showCell(back.dataset.returnCell,false);}
  if(e.target.closest('.dialog-close')){const d=e.target.closest('dialog');if(d.id==='detail-dialog')closeDetail();else d.close();}
  // 在同页文献锚点导航前关闭弹窗，确保引用目标可见。
- const a=e.target.closest('a[href]');if(a&&a.getAttribute('href').startsWith('/references/#'))document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+ const a=e.target.closest('a[href]');if(a&&new URL(a.href).pathname===siteBase+'references/'&&new URL(a.href).hash.startsWith('#ref-'))document.querySelectorAll('dialog[open]').forEach(d=>d.close());
 });
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){if(d.id==='detail-dialog')closeDetail();else d.close();}}}));
 $('open-cells')?.addEventListener('click',showCells);$('open-region')?.addEventListener('click',showRegion);
