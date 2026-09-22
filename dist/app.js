@@ -156,6 +156,7 @@ const evidenceButton=(ids,cellId=null)=>{const keys=uniqueEvidenceIds(ids);retur
 const noteButton=(key,label='了解更多')=>`<span>${label} · </span>${evidenceButton([key])}`;
 function writeUrl(){
  const url=new URL(location.href);
+ url.searchParams.delete('event');
  url.searchParams.set('stage',state.stage);url.searchParams.set('view',state.view);
  for(const [key,value] of [['cell',state.selectedCell],['relation',state.selectedRelation]]){if(value)url.searchParams.set(key,value);else url.searchParams.delete(key);}
  if(url.href!==location.href)history.pushState(null,'',url);
@@ -375,13 +376,32 @@ function renderReferences(){
  $('reference-list').innerHTML=papers.map(p=>`<article class="reference-entry" id="ref-${p.id}" tabindex="-1"><h2><a href="https://doi.org/${p.doi}" target="_blank" rel="noopener noreferrer">${p.title}</a></h2><p class="reference-authors">${p.authors}</p><p class="reference-publication"><span>${p.journal}</span><time>${p.year}</time></p></article>`).join('');
 }
 function revealReference(){if(isReferences&&/^#ref-\d+$/.test(location.hash)){const target=$(location.hash.slice(1));if(target)requestAnimationFrame(()=>{target.scrollIntoView({block:'start',behavior:'instant'});target.focus({preventScroll:true});});}}
+// 搜索只索引本站已有对象；marker 文本匹配仍返回 Cell，不产生 Gene 对象。
+function cellView(id){return (viewCellIds[state.view]||[]).includes(id)?state.view:Object.keys(viewCellIds).find(view=>viewCellIds[view].includes(id))||'trajectory';}
 function renderSearch(){
- const q=$('search-input').value.trim().toLowerCase();let results=[];
- for(const s of stages){if(!q||`${s} ${stageData[s].title}`.toLowerCase().includes(q))results.push(`<a href="/atlas/?stage=${s}#timeline">${s} · ${stageData[s].title}<small>发育时期</small></a>`);}
- if(q){for(const [k,c] of Object.entries(cells)){if(`${c.title} ${c.english} ${c.markers} ${c.text}`.toLowerCase().includes(q))results.push(`<button data-cell="${k}">${c.title}<small>${c.english}</small></button>`);}
- for(const p of papers){if(`${p.short} ${p.title} ${p.authors} ${p.doi} ${p.tags.join(' ')} ${p.summary}`.toLowerCase().includes(q))results.push(`<a href="/references/#ref-${p.id}">${p.title}<small>${p.authors} · ${p.journal} · ${p.year}</small></a>`);}}
- $('search-results').innerHTML=results.join('')||'<p>尚未收录匹配内容。可以搜索 P0、Eomes、OPC 或作者姓名。</p>';
+ const q=$('search-input').value.trim().toLowerCase();const groups=new Map();
+ const add=(group,label,description,path)=>{if(!groups.has(group))groups.set(group,[]);groups.get(group).push({label,description,path});};
+ for(const stage of stages)if(!q||`${stage} ${stageData[stage].title}`.toLowerCase().includes(q))add('Stage',stage,stageData[stage].title,`atlas/?stage=${stage}`);
+ if(q){
+  for(const [id,c] of Object.entries(cells)){
+   const identity=`${id} ${c.name} ${c.english}`.toLowerCase().includes(q);const marker=c.markers.toLowerCase().includes(q);
+   if(identity||marker)add('Cell / State',c.name,c.english+(marker&&!identity?' · Marker text match':''),`atlas/?view=${cellView(id)}&cell=${id}`);
+  }
+  for(const [id,view] of Object.entries(relationshipViews))if(`${id} ${view.name}`.toLowerCase().includes(q))add('Relationship view',view.name,'独立关系视图',`lineage/?view=${id}`);
+  for(const r of relations)if(`${r.id} ${cells[r.source].name} ${cells[r.source].english} ${cells[r.target].name} ${cells[r.target].english}`.toLowerCase().includes(q))add('Relation',cells[r.source].name+' → '+cells[r.target].name,relationTypeLabels[r.relationshipType],`lineage/?view=${r.view}&relation=${r.id}`);
+  for(const e of Object.values(events))if(`${e.title} ${e.description}`.toLowerCase().includes(q))add('Event',e.title,`${e.displayStage} 展示条目 · 展示时期不是发生时间`,`atlas/?stage=${e.displayStage}&event=${e.id}`);
+  for(const p of papers)if(`${p.short} ${p.title} ${p.authors} ${p.doi} ${p.tags.join(' ')}`.toLowerCase().includes(q))add('Reference',p.title,`${p.authors} · ${p.journal} · ${p.year}`,`references/#ref-${p.id}`);
+ }
+ const count=[...groups.values()].reduce((n,list)=>n+list.length,0);
+ $('search-results').innerHTML=`<p class="search-status" role="status">${q?(count?`${count} 个匹配对象`:'尚未收录匹配内容。试试 P0、IP、Tri-IPC 或 Zhang。'):'选择一个时期开始，或输入细胞、关系或文献关键词。'}</p>`+[...groups].map(([group,items])=>`<section class="search-group"><h2>${group}</h2>${items.map(item=>`<a href="${siteBase}${item.path}">${escapeHTML(item.label)}<small>${escapeHTML(item.description)}</small></a>`).join('')}</section>`).join('');
 }
+$('search-dialog').addEventListener('keydown',e=>{
+ const links=[...$('search-results').querySelectorAll('a')];const index=links.indexOf(document.activeElement);
+ if(['ArrowDown','ArrowUp'].includes(e.key)&&links.length){e.preventDefault();links[(index+(e.key==='ArrowDown'?1:-1)+links.length)%links.length].focus();}
+ if(e.key==='Enter'&&document.activeElement===$('search-input')&&links.length){e.preventDefault();links[0].click();}
+});
+// Event 深链接只决定打开哪条已收录记录；不改变其科学时间字段。
+function revealUrlEvent(){const id=new URLSearchParams(location.search).get('event');if(id&&events[id])showAtlasEvent(id);}
 function openSearch(){if($('detail-dialog').open)$('detail-dialog').close();if(!$('search-dialog').open)$('search-dialog').showModal();renderSearch();$('search-input').focus();}
 $('stage-buttons')?.addEventListener('click',e=>{const b=e.target.closest('[data-stage]');if(b)renderStage(b.dataset.stage,true);});
 $('previous-stage')?.addEventListener('click',()=>renderStage(stages[Math.max(0,stages.indexOf(state.stage)-1)],true));
@@ -407,7 +427,7 @@ document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA','SE
 $('detail-dialog').addEventListener('close',()=>{if(detailOpener?.isConnected)detailOpener.focus({preventScroll:true});});
 function closeDetail(){if(isExplorer){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
 $('detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeDetail();});
-window.addEventListener('popstate',()=>{state=readUrlState();canonicalizeSelectionUrl();if($('search-dialog').open)$('search-dialog').close();renderState();revealReference();});
+window.addEventListener('popstate',()=>{state=readUrlState();canonicalizeSelectionUrl();if($('search-dialog').open)$('search-dialog').close();renderState();revealReference();revealUrlEvent();});
 window.addEventListener('hashchange',revealReference);
 $('home-page').hidden=isReferences;$('references-page').hidden=!isReferences;
 document.querySelector(`[data-nav="${pageName}"]`).classList.add('active');
@@ -418,7 +438,7 @@ document.querySelector('[data-nav="'+pageName+'"]').setAttribute('aria-current',
 $('page-intro').hidden=!['atlas','lineage'].includes(pageName);
 $('page-title').textContent=pageTitles[pageName];
 $('page-description').textContent=pageName==='atlas'?'沿时间与细胞关系探索小鼠皮层神经发育。':'从祖细胞出发，探索不同细胞状态与分化方向。';
-renderReferences();renderState();
+renderReferences();renderState();revealUrlEvent();
 if(isReferences)revealReference();
 
 
