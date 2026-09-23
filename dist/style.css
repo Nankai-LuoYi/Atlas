@@ -205,3 +205,5 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 /* 曲线连接保持原有证据线型，圆头减弱机械折线感。 */
 .edge-line,.edge-tip{stroke-linecap:round;stroke-linejoin:round}
 .atlas-edge[data-type=computational_trajectory] .edge-line{stroke-dasharray:3 5}
+
+.atlas-edge .edge-hit{stroke-width:28}
