@@ -226,3 +226,15 @@ body[data-page=atlas] #home-page{display:none}
 .overview-boundary{font-size:12px;line-height:1.8;color:#7788a1;padding-top:24px;margin-top:24px;border-top:1px solid #e3ebf5}
 @media(max-width:1179px){.atlas-overview{width:calc(100% - 48px)}.development-rail{display:block}.development-moment{display:grid;grid-template-columns:112px minmax(0,1fr)}.moment-head{border:0;border-right:2px solid #c7d9ed;margin:0;padding:12px 24px 30px 0}.moment-head:after{bottom:auto;top:54px;left:auto;right:-5px}.is-postnatal .moment-head{border-right-color:#c7bfdf}.moment-body,.development-moment:first-child .moment-body{border:0;border-bottom:1px solid #e6edf5;padding:16px 0 28px 28px}.moment-body h4{min-height:0;font-size:17px;margin:0 0 8px}.moment-summary{font-size:13px;margin-bottom:12px}.moment-events{display:flex;gap:12px;flex-wrap:wrap}.moment-event{width:auto}.moment-cells{display:flex;flex-wrap:wrap;gap:6px 14px}.moment-label{width:100%}.moment-cell{width:auto}.moment-evidence{margin-top:8px}}
 @media(max-width:600px){.atlas-overview{width:calc(100% - 36px)}.overview-heading{gap:12px;margin-bottom:18px}.overview-heading h2{font-size:18px}.overview-heading>a{margin-left:0}.development-moment{grid-template-columns:78px minmax(0,1fr)}.moment-head{padding-right:12px}.moment-head .stage-illustration{width:62px;height:62px}.moment-head h3{font-size:14px}.moment-body,.development-moment:first-child .moment-body{padding-left:18px}.moment-body h4{font-size:15px}.moment-summary{font-size:12px}.moment-events{display:block}.moment-event{font-size:12px}}
+
+/* 全程标题直接打开原证据详情，取消单独的 Evidence 行。 */
+.moment-title{display:block;width:100%;text-align:left;border:0;background:none;padding:0;color:inherit;font:inherit;line-height:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:#bccde2;text-decoration-thickness:1px;text-underline-offset:5px}
+.moment-title:hover{color:#245d9e;text-decoration-color:currentColor}.moment-title:focus-visible{outline:2px solid #6f95c2;outline-offset:4px;border-radius:2px}
+/* 补充概念图为等距六格 PNG，功能分类共用图，不伪造亚型形态差异。 */
+.atlas-graph .cell-art[class*="cell-art--concept-"]{background-image:url('/assets/细胞补充概念图.png');background-size:300% 200%;width:100px;height:100px}
+.atlas-graph .cell-art--concept-rg{background-position:0% 0%}
+.atlas-graph .cell-art--concept-ipc{background-position:50% 0%}
+.atlas-graph .cell-art--concept-ependymal{background-position:100% 0%}
+.atlas-graph .cell-art--concept-ol{background-position:0% 100%}
+.atlas-graph .cell-art--concept-interneuron{background-position:50% 100%}
+.atlas-graph .cell-art--concept-state{background-position:100% 100%}

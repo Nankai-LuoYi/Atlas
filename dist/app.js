@@ -244,6 +244,13 @@ function renderAtlasControls(){
   const button=atlasElement('button','',view.name);button.dataset.view=id;button.setAttribute('aria-pressed',String(id===state.view));group.append(button);
  }
 }
+// 共享形态仅作识别辅助；功能亚型不能仅凭图像区分，来源分类不代表不同外形。
+const cellIllustrations={
+ ap:'ap',ip:'ip',pn:'pn',astro:'astro',opc:'opc',dorsal:'opc',ventral:'opc',
+ nrg:'concept-rg',erg:'concept-rg',trg:'concept-rg',
+ pynipc:'concept-ipc',tri:'concept-ipc',apc:'concept-ipc',obinipc:'concept-ipc',
+ ependymal:'concept-ependymal',ol:'concept-ol',obin:'concept-interneuron',interneuron:'concept-interneuron',glia:'concept-state'
+};
 function atlasGraphLayout(ids,edges){
  const children=id=>edges.filter(r=>r.source===id).map(r=>r.target);
  const incoming=new Set(edges.map(r=>r.target));const roots=ids.filter(id=>!incoming.has(id));
@@ -252,7 +259,7 @@ function atlasGraphLayout(ids,edges){
  const leafCount=Math.max(1,ids.filter(id=>!children(id).length).length);
  // 为概念插图预留高度；无插图的来源比较保持原尺寸，布局不参与科学判断。
  const nodeWidth=desktop?(sparse?Math.min(220,available*.30):Math.max(118,Math.min(164,Math.floor((available-44-(leafCount-1)*16)/leafCount)))):(sparse?(available<400?136:164):118);
- const illustrated=ids.some(id=>['ap','ip','pn','astro','opc'].includes(id));
+ const illustrated=ids.some(id=>Object.hasOwn(cellIllustrations,id));
  const nodeHeight=illustrated?(desktop?(sparse?222:172):(sparse?210:158)):(desktop?(sparse?124:108):(sparse?96:80));
  const pitch=desktop?Math.max(nodeWidth+16,(available-44-nodeWidth)/Math.max(1,leafCount-1)):(sparse?(available>=600?246:174):142);
  const step=nodeHeight+(desktop?(sparse?72:58):52);
@@ -306,14 +313,14 @@ function renderAtlasGraph(){
   button.classList.toggle('is-stage-focus',Object.hasOwn(annotations,id));button.classList.toggle('is-stage-background',state.view==='trajectory'&&!Object.hasOwn(annotations,id));
   button.classList.toggle('is-selected',state.selectedCell===id);button.classList.toggle('is-related',related.has(id)&&state.selectedCell!==id);button.classList.toggle('is-muted',visibleSelection&&!related.has(id)&&state.selectedCell!==id);button.setAttribute('aria-pressed',String(state.selectedCell===id));
   // 仅绑定已有对象的概念形态；图像不提供时期、身份或关系证据。
-  const illustration={ap:'ap',ip:'ip',pn:'pn',astro:'astro',opc:'opc'}[id];
+  const illustration=cellIllustrations[id];
   if(illustration){const art=atlasElement('span','cell-art cell-art--'+illustration);art.setAttribute('aria-hidden','true');button.append(art);button.classList.add('has-cell-art');}
   button.append(atlasElement('strong','',c.name),atlasElement('small','',c.english.includes(' · ')?c.english.split(' · ').at(-1):c.english));if(annotations[id])button.append(atlasElement('span','cell-stage-annotation',annotations[id]));graph.append(button);
  }
  const legend=$('atlas-graph-legend');legend.replaceChildren();
  for(const type of new Set(edges.map(r=>r.relationshipType))){const item=atlasElement('span','atlas-legend-item',relationTypeLabels[type]||'Unknown');item.dataset.type=type;legend.append(item);}
  $('atlas-graph-note').textContent=state.view==='opc'?'来源比较，不绘制方向性关系；仅覆盖已有实验范围，不包含全部腹侧来源。':state.view==='rg'?'作者综合模型；连线不代表每条路径都经过单细胞克隆验证。':'简化的转录状态关系；计算轨迹不等于实验谱系追踪。';
- if(ids.some(id=>['ap','ip','pn','astro','opc'].includes(id)))$('atlas-graph-note').textContent+=' 细胞插图为 AI 辅助概念示意，不表示当前时期的实际形态。';
+ if(ids.some(id=>cellIllustrations[id]))$('atlas-graph-note').textContent+=' 插图为 AI 辅助概念示意，不表示当前时期的实际形态；功能亚型及来源分类可共用形态，不能据此外形判定身份。';
 }
 function renderLiteratureCells(){
  let panel=$('atlas-literature-cells');
@@ -384,11 +391,11 @@ function renderContinuousAtlas(){
   const data=stageData[stage],focus=stageGraphFocus[stage];
   const column=atlasElement('article','development-moment');column.id='moment-'+stage.replace('.','_');column.classList.toggle('is-postnatal',stage[0]==='P');column.classList.toggle('is-url-stage',new URLSearchParams(location.search).get('stage')===stage);
   const head=atlasElement('div','moment-head');const art=atlasElement('span','stage-illustration');art.style.backgroundPosition=((i%6)*20)+'% '+(i<6?0:100)+'%';art.setAttribute('role','img');art.setAttribute('aria-label',stage+' 小鼠发育形态示意');head.append(art,atlasElement('h3','',stage));column.append(head);
-  const body=atlasElement('div','moment-body');body.append(atlasElement('h4','',data.title));atlasParagraph(body,data.description,'moment-summary');
+  const body=atlasElement('div','moment-body');const heading=atlasElement('h4','');const headingButton=atlasElement('button','moment-title',data.title);headingButton.dataset.evidence=uniqueEvidenceIds(focus.evidenceIds).join(',');headingButton.setAttribute('aria-label',stage+'：'+data.title+'，查看文献证据');heading.append(headingButton);body.append(heading);atlasParagraph(body,data.description,'moment-summary');
   const observed=Object.values(cells).filter(c=>coverage('cell',c.id,stage,'trajectory').hasDirectStageEvidence);
   if(observed.length){const group=atlasElement('div','moment-cells');group.append(atlasElement('span','moment-label','已整理的观察对象'));for(const c of observed){const label=c.english.includes(' · ')?c.english.split(' · ').at(-1):c.name;const b=atlasElement('button','moment-cell',label);b.title=c.name;b.setAttribute('aria-label',c.name+'，'+stage+' 观察详情');b.dataset.overviewCell=c.id;b.dataset.observationStage=stage;group.append(b);}body.append(group);}
   const eventsList=atlasElement('div','moment-events');for(const event of data.events){const b=atlasElement('button','moment-event',event.title+' ›');b.dataset.atlasEvent=event.id;eventsList.append(b);}body.append(eventsList);
-  const evidence=atlasElement('div','moment-evidence');evidence.innerHTML=evidenceButton(focus.evidenceIds);body.append(evidence);column.append(body);rail.append(column);
+  column.append(body);rail.append(column);
  }
  root.append(rail);
  atlasParagraph(root,'沿线展示已整理的采样观察与研究背景。时间顺序不等于谱系连线；P0 来自独立研究，未用相邻时期插值。','overview-boundary');
