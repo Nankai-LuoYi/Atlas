@@ -369,7 +369,35 @@ function showAtlasEvent(id){
  showDetail(`<h2>${escapeHTML(event.title)}</h2><p>${escapeHTML(event.description)}</p><p>此条目在 ${escapeHTML(event.displayStage)} 阶段页面中展示；展示位置不等于事件发生时间。</p>${fields.map(([label,value])=>`<p>${label}：${escapeHTML(Array.isArray(value)?value.join(' / '):value)}</p>`).join('')}${evidenceButton(event.evidenceIds)}`);
 }
 let renderedSelection='';
+// Atlas 默认展示全部时期；stage 是详情定位上下文，不再筛掉其他时期。
+function renderContinuousAtlas(){
+ let root=$('atlas-overview');
+ if(!root){root=atlasElement('section','atlas-overview wrap');root.id='atlas-overview';root.setAttribute('aria-label','E10.5 至 P4 发育全程');$('home-page').before(root);}
+ $('home-page').hidden=true;
+ if($('search-dialog').open)$('search-dialog').close();
+ if($('detail-dialog').open)$('detail-dialog').close();
+ root.replaceChildren();
+ const top=atlasElement('div','overview-heading');top.id='timeline';top.append(atlasElement('span','eyebrow','DEVELOPMENT THROUGH TIME'),atlasElement('h2','','从早期祖细胞，到出生后细胞分化'));
+ const link=atlasElement('a','text-link','查看细胞关系模型 →');link.href=siteBase+'lineage/?stage='+encodeURIComponent(state.stage)+'&view='+encodeURIComponent(state.view);top.append(link);root.append(top);
+ const rail=atlasElement('div','development-rail');
+ for(const [i,stage] of stages.entries()){
+  const data=stageData[stage],focus=stageGraphFocus[stage];
+  const column=atlasElement('article','development-moment');column.id='moment-'+stage.replace('.','_');column.classList.toggle('is-postnatal',stage[0]==='P');column.classList.toggle('is-url-stage',new URLSearchParams(location.search).get('stage')===stage);
+  const head=atlasElement('div','moment-head');const art=atlasElement('span','stage-illustration');art.style.backgroundPosition=((i%6)*20)+'% '+(i<6?0:100)+'%';art.setAttribute('role','img');art.setAttribute('aria-label',stage+' 小鼠发育形态示意');head.append(art,atlasElement('h3','',stage));column.append(head);
+  const body=atlasElement('div','moment-body');body.append(atlasElement('h4','',data.title));atlasParagraph(body,data.description,'moment-summary');
+  const observed=Object.values(cells).filter(c=>coverage('cell',c.id,stage,'trajectory').hasDirectStageEvidence);
+  if(observed.length){const group=atlasElement('div','moment-cells');group.append(atlasElement('span','moment-label','已整理的观察对象'));for(const c of observed){const label=c.english.includes(' · ')?c.english.split(' · ').at(-1):c.name;const b=atlasElement('button','moment-cell',label);b.title=c.name;b.setAttribute('aria-label',c.name+'，'+stage+' 观察详情');b.dataset.overviewCell=c.id;b.dataset.observationStage=stage;group.append(b);}body.append(group);}
+  const eventsList=atlasElement('div','moment-events');for(const event of data.events){const b=atlasElement('button','moment-event',event.title+' ›');b.dataset.atlasEvent=event.id;eventsList.append(b);}body.append(eventsList);
+  const evidence=atlasElement('div','moment-evidence');evidence.innerHTML=evidenceButton(focus.evidenceIds);body.append(evidence);column.append(body);rail.append(column);
+ }
+ root.append(rail);
+ atlasParagraph(root,'沿线展示已整理的采样观察与研究背景。时间顺序不等于谱系连线；P0 来自独立研究，未用相邻时期插值。','overview-boundary');
+ // 兼容旧 cell / relation 深链接：全程始终保留，详情作为弹窗打开。
+ if(state.selectedRelation)showRelation(state.selectedRelation);
+ else if(state.selectedCell){const trigger=root.querySelector('[data-overview-cell="'+state.selectedCell+'"]');trigger?.focus({preventScroll:true});showCell(state.selectedCell,false);}
+}
 function renderAtlasWorkspace(){
+ if(pageName==='atlas'){renderContinuousAtlas();return;}
  const focus=document.activeElement;const focusCell=focus?.dataset.cell,focusRelation=focus?.dataset.relation,focusView=focus?.dataset.view,focusStage=focus?.dataset.stage;
  const scroll=$('atlas-graph-scroll');const scrollLeft=scroll.scrollLeft;
  if($('search-dialog').open)$('search-dialog').close();if($('detail-dialog').open)$('detail-dialog').close();
@@ -385,7 +413,7 @@ if(isExplorer){
  $('atlas-stage').addEventListener('change',e=>setState({stage:e.target.value}));
  $('atlas-view-select').addEventListener('change',e=>setState({view:e.target.value}));
  // 仅响应画布宽度变化，调整显示尺寸，不修改选择或 URL。
- let previousWidth=0;new ResizeObserver(entries=>{const width=entries[0].contentRect.width;if(width===previousWidth)return;previousWidth=width;renderAtlasGraph();const active=$('stage-buttons')?.querySelector('.active');if(active)$('stage-buttons').scrollLeft=active.offsetLeft-($('stage-buttons').clientWidth-active.offsetWidth)/2;}).observe($('atlas-graph-scroll'));
+ let previousWidth=0;new ResizeObserver(entries=>{if(pageName==='atlas')return;const width=entries[0].contentRect.width;if(width===previousWidth)return;previousWidth=width;renderAtlasGraph();const active=$('stage-buttons')?.querySelector('.active');if(active)$('stage-buttons').scrollLeft=active.offsetLeft-($('stage-buttons').clientWidth-active.offsetWidth)/2;}).observe($('atlas-graph-scroll'));
  $('atlas-prev').addEventListener('click',()=>setState({stage:stages[Math.max(0,stages.indexOf(state.stage)-1)]}));
  $('atlas-next').addEventListener('click',()=>setState({stage:stages[Math.min(stages.length-1,stages.indexOf(state.stage)+1)]}));
  $('atlas-clear').addEventListener('click',()=>setState({selectedCell:null,selectedRelation:null}));
@@ -453,12 +481,13 @@ $('next-stage')?.addEventListener('click',()=>renderStage(stages[Math.min(stages
 $('relationship-tabs')?.addEventListener('keydown',e=>{if(isExplorer)return;const keys=Object.keys(relationshipViews);if(['ArrowRight','ArrowLeft','Home','End'].includes(e.key)){e.preventDefault();const i=keys.indexOf(state.view);const next=e.key==='Home'?0:e.key==='End'?keys.length-1:(i+(e.key==='ArrowRight'?1:-1)+keys.length)%keys.length;renderRelationships(keys[next],true);$(`tab-${keys[next]}`).focus();}});
 // 动态文献、关系图和弹窗使用委托事件，避免筛选后按钮失效。
 document.addEventListener('click',async e=>{
+ const overviewCell=e.target.closest('[data-overview-cell]');if(overviewCell){setState({stage:overviewCell.dataset.observationStage,selectedCell:overviewCell.dataset.overviewCell,selectedRelation:null});return;}
  const cell=e.target.closest('[data-cell]');if(cell)showCell(cell.dataset.cell);
  const event=e.target.closest('[data-atlas-event]');if(event)showAtlasEvent(event.dataset.atlasEvent);
  const note=e.target.closest('[data-evidence]');if(note)showEvidence(note.dataset.evidence,note.dataset.evidenceCell);
  const view=e.target.closest('[data-view]');if(view)renderRelationships(view.dataset.view,true);
  const relation=e.target.closest('[data-relation]');if(relation)setState({selectedRelation:relation.dataset.relation,selectedCell:null});
- const back=e.target.closest('[data-return-cell]');if(back){if(isExplorer){$('detail-dialog').close();$('atlas-detail-content').scrollIntoView({block:'nearest'});}else showCell(back.dataset.returnCell,false);}
+ const back=e.target.closest('[data-return-cell]');if(back){if(pageName==='atlas'){showCell(back.dataset.returnCell,false);}else if(isExplorer){$('detail-dialog').close();$('atlas-detail-content').scrollIntoView({block:'nearest'});}else showCell(back.dataset.returnCell,false);}
  if(e.target.closest('.dialog-close')){const d=e.target.closest('dialog');if(d.id==='detail-dialog')closeDetail();else d.close();}
  // 在同页文献锚点导航前关闭弹窗，确保引用目标可见。
  const a=e.target.closest('a[href]');if(a&&new URL(a.href).pathname===siteBase+'references/'&&new URL(a.href).hash.startsWith('#ref-'))document.querySelectorAll('dialog[open]').forEach(d=>d.close());
@@ -469,7 +498,7 @@ $('lineage-info')?.addEventListener('click',()=>showEvidence(relationshipViews[s
 $('open-search').addEventListener('click',openSearch);$('search-input').addEventListener('input',renderSearch);
 document.addEventListener('keydown',e=>{if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)&&!document.querySelector('dialog[open]')){e.preventDefault();openSearch();}});
 $('detail-dialog').addEventListener('close',()=>{if(detailOpener?.isConnected)detailOpener.focus({preventScroll:true});});
-function closeDetail(){if(isExplorer){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
+function closeDetail(){if(pageName==='atlas'&&(state.selectedCell||state.selectedRelation)){setState({selectedCell:null,selectedRelation:null});return;}if(isExplorer){$('detail-dialog').close();return;}if(state.selectedCell||state.selectedRelation)setState({selectedCell:null,selectedRelation:null});else $('detail-dialog').close();}
 $('detail-dialog').addEventListener('cancel',e=>{e.preventDefault();closeDetail();});
 window.addEventListener('popstate',()=>{state=readUrlState();canonicalizeSelectionUrl();if($('search-dialog').open)$('search-dialog').close();renderState();revealReference();revealUrlEvent();});
 window.addEventListener('hashchange',revealReference);
@@ -481,7 +510,7 @@ document.title=pageTitles[pageName]+' · Mouse Neurodevelopment Atlas';
 document.querySelector('[data-nav="'+pageName+'"]').setAttribute('aria-current','page');
 $('page-intro').hidden=!['atlas','lineage'].includes(pageName);
 $('page-title').textContent=pageTitles[pageName];
-$('page-description').textContent=pageName==='atlas'?'沿时间与细胞关系探索小鼠皮层神经发育。':'从祖细胞出发，探索不同细胞状态与分化方向。';
+$('page-description').textContent=pageName==='atlas'?'E10.5—P4：沿时间展开小鼠皮层神经发育的全程观察。':'从祖细胞出发，探索不同细胞状态与分化方向。';
 renderReferences();renderState();revealUrlEvent();
 if(isReferences)revealReference();
 
