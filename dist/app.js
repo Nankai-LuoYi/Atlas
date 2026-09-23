@@ -254,7 +254,8 @@ const cellIllustrations={
 function atlasGraphLayout(ids,edges){
  const children=id=>edges.filter(r=>r.source===id).map(r=>r.target);
  const incoming=new Set(edges.map(r=>r.target));const roots=ids.filter(id=>!incoming.has(id));
- const available=$('atlas-graph-scroll').clientWidth;const sparse=ids.length<=5;
+ const available=Math.max(320,$('atlas-graph-scroll').clientWidth);
+ if(state.view==='opc'){const nodeWidth=Math.min(240,available-44);return {positions:new Map(ids.map((id,i)=>[id,{x:available<540?(available-nodeWidth)/2:available*(i? .75:.25)-nodeWidth/2,y:available<540?i*290+22:22}])),nodeWidth,nodeHeight:250,width:available,height:available<540?580:295};}const sparse=ids.length<=5;
  const desktop=matchMedia('(min-width:1180px)').matches;
  const leafCount=Math.max(1,ids.filter(id=>!children(id).length).length);
  // 为概念插图预留高度；无插图的来源比较保持原尺寸，布局不参与科学判断。
@@ -275,16 +276,58 @@ function atlasGraphLayout(ids,edges){
  roots.forEach(id=>visit(id,0));ids.filter(id=>!positions.has(id)).forEach(id=>visit(id,0));
  return {positions,nodeWidth,nodeHeight,width:Math.max(320,(leaf-1)*pitch+nodeWidth+44),height:Math.max(...[...positions.values()].map(p=>p.y))+nodeHeight+22};
 }
+// 场景是文献阅读插图，不参与 coverage、细胞身份或科学时间筛选。
+const stageScenes={
+ 'E10.5':{sheet:0,tile:0,focus:'祖细胞构成早期观察起点',reading:'图中长突起与短突起细胞用于区分祖细胞形态概念，不表示固定数量或命运。',cells:['ap','ip'],limit:'这是研究采样的起点，不是整个神经系统发育的起点。'},
+ 'E11.5':{sheet:0,tile:1,focus:'早期祖细胞背景与 Cajal–Retzius 细胞',reading:'外侧的横向细胞用于提示 Cajal–Retzius 细胞这一阅读主题。',cells:['ap','ip'],limit:'该研究首次检测到该群体，不等于此日才产生。'},
+ 'E12.5':{sheet:0,tile:2,focus:'祖细胞与年轻神经元的连续变化',reading:'沿组织径向排列的细胞表现祖细胞、迁移及未成熟神经元的连续状态。',cells:['ap','ip','pn'],limit:'形态过渡是解释性示意，不代表单细胞追踪或唯一分化路线。'},
+ 'E13.5':{sheet:0,tile:3,focus:'神经元变化与早期祖细胞分支状态',reading:'祖细胞中的蓝紫色差别提示转录状态；横向细胞提示中间神经元相关观察。',cells:['ap','glia','interneuron'],limit:'胶质相关转录分支不等于成熟胶质细胞；中间神经元不属于主要皮层轨迹。'},
+ 'E14.5':{sheet:1,tile:0,focus:'持续神经发生，身份仍在建立',reading:'将祖细胞、迁移与未成熟神经元放入同一组织场景，表现重叠发生的过程。',cells:['ap','ip','pn'],limit:'E14.5–E17.5 是原文概括的生成时段，图中不划定已完成的第 4 或第 2/3 层。'},
+ 'E15.5':{sheet:1,tile:1,focus:'迁移状态与径向位置',reading:'长短及朝向不同的年轻神经元呈现径向迁移语境，对应 Fig. 2b 的空间阅读重点。',cells:['migrating_immature'],limit:'原文为五种细分状态；本图不将它们改称五种固定细胞类型，也不复现测量位置。'},
+ 'E16.5':{sheet:1,tile:2,focus:'在相邻采样间理解连续分化',reading:'以祖细胞与年轻神经元共存的场景，延续相邻时期的阅读主题。',cells:['ap','pn'],limit:'本期没有对应 Slide-seq 采样；场景不是 E16.5 的实测空间重建，也不宣称独有事件。'},
+ 'E17.5':{sheet:1,tile:3,focus:'神经元与观察到的胶质群体',reading:'在神经元背景中加入 OPC 与星形胶质相关的概念形态，提示本期样本观察。',cells:['opc','astro'],limit:'样本首次检测不等于整个脑中首次生成；插图不代表成熟形态。'},
+ 'E18.5':{sheet:2,tile:0,focus:'围出生期的多种细胞状态',reading:'并置神经元与胶质相关形态，表现胚胎晚期细胞多样性的阅读主题。',cells:['pn','glia'],limit:'不由插图推算比例、生成时间或细胞间谱系。'},
+ 'P0':{sheet:2,tile:1,focus:'独立观察：SVZ 中的 EOMES 阳性细胞',reading:'以局部细胞与核染色概念表现表达观察；标记后的后代另在证据中阅读。',cells:[],limit:'来自独立研究；不画成 Di Bella 的 P0 样本，不把后续后代或敲除结果画成正常 P0 状态。'},
+ 'P1':{sheet:2,tile:2,focus:'出生后神经元群体与组织位置',reading:'不同径向位置的年轻神经元，提示 P1 空间映射中的多种投射神经元群体。',cells:['cthpn','scpn','cpn_l56'],limit:'示意形态不用于识别分子亚型；具体位置依据原文空间图。'},
+ 'P4':{sheet:2,tile:3,focus:'进一步分化，仍在发育',reading:'以多种年轻神经元状态呈现观察窗口末端的分化主题。',cells:['cpn_l23','cpn_l56','stellate_l4'],limit:'P4 是该研究窗口终点，不是神经系统成熟终点；示意形态不能诊断亚型。'}
+};
+const sceneSheets=['胚胎早期发育场景.png','神经发生与迁移场景.png','围出生期发育场景.png'];
+function renderStageScene(){
+ let scene=$('stage-scene'),model=$('trajectory-model');
+ if(!model){
+  scene=atlasElement('section','stage-scene');scene.id='stage-scene';
+  model=atlasElement('details','trajectory-model');model.id='trajectory-model';
+  const summary=atlasElement('summary','','查看跨时期关系模型');model.append(summary);
+  $('atlas-graph-legend').before(scene,model);
+  model.append($('atlas-graph-legend'),$('atlas-graph-scroll'),$('atlas-graph-note'));
+ }
+ const active=state.view==='trajectory';scene.hidden=!active;model.classList.toggle('is-context-model',active);
+ // 展示折叠不改科学 state。旧 relation 深链接仍自动展开对应模型。
+ if(model.dataset.view!==state.view){model.open=!active;model.dataset.view=state.view;}
+ if(active&&state.selectedRelation&&relations.find(r=>r.id===state.selectedRelation)?.view===state.view)model.open=true;
+ scene.replaceChildren();if(!active)return;
+ const item=stageScenes[state.stage];scene.dataset.stage=state.stage;
+ const heading=atlasElement('div','scene-heading');heading.append(atlasElement('span','eyebrow','DEVELOPMENTAL SCENE'),atlasElement('h3','',item.focus));scene.append(heading);
+ const figure=atlasElement('figure','');const art=atlasElement('div','stage-scene-art');art.setAttribute('role','img');art.setAttribute('aria-label',state.stage+'：'+item.reading+' 概念示意，非实测组织图。');
+ art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[item.sheet]}")`;art.style.clipPath=item.sheet===2&&item.tile<2?'inset(0 0 5% 0)':'';art.style.backgroundPosition=(item.tile%2)*100+'% '+Math.floor(item.tile/2)*100+'%';figure.append(art);
+ const caption=atlasElement('figcaption','');caption.append(atlasElement('strong','',state.stage+' · '+item.focus));atlasParagraph(caption,item.reading);atlasParagraph(caption,'AI 辅助概念插图 · 不按比例；颜色、形态与数量不代表实测或亚型判据。','scene-limit');atlasParagraph(caption,item.limit,'scene-limit');figure.append(caption);scene.append(figure);
+ const links=atlasElement('div','scene-objects');links.append(atlasElement('span','','阅读相关对象'));
+ for(const id of item.cells){const b=atlasElement('button','text-link',cells[id].name);b.dataset.cell=id;b.setAttribute('aria-pressed',String(state.selectedCell===id));links.append(b);}
+ if(!item.cells.length){const b=atlasElement('button','text-link','EOMES 表达观察');b.dataset.evidence='p0eomes';links.append(b);}
+ scene.append(links);
+}
 function renderAtlasGraph(){
+ renderStageScene();
  const ids=viewCellIds[state.view];const edges=relations.filter(r=>r.view===state.view);
  const focus=stageGraphFocus[state.stage];
  const annotations=state.view==='trajectory'?focus.annotations:{};
  let stagePanel=$('atlas-stage-focus');
- if(!stagePanel){stagePanel=atlasElement('div','atlas-stage-focus');stagePanel.id='atlas-stage-focus';stagePanel.setAttribute('aria-live','polite');$('atlas-graph-legend').before(stagePanel);}
+ if(!stagePanel){stagePanel=atlasElement('div','atlas-stage-focus');stagePanel.id='atlas-stage-focus';stagePanel.setAttribute('aria-live','polite');$('stage-scene').before(stagePanel);}
  stagePanel.replaceChildren();
  stagePanel.append(atlasElement('strong','',state.stage+' · '+stageData[state.stage].title));
  atlasParagraph(stagePanel,stageData[state.stage].description);
- const context=state.view==='trajectory'?(state.stage==='P0'?'P0 未由该转录组时间序列采样；不将 Eomes 阳性群体等同于 IP。':'图中标注为本期文献阅读重点；未标注节点是跨时期模型背景，不表示不存在。'):'本视图是跨时期模型 / 来源比较，尚未整理逐时期节点关联；下方连线不按日龄改写。';
+ stagePanel.hidden=state.view!=='trajectory';
+ const context=state.view==='trajectory'?(state.stage==='P0'?'P0 来自独立研究，表达、群体标记及干预分开阅读。':'下方场景随时期变化；跨时期的计算关系模型可另行展开。'):'本视图是跨时期模型 / 来源比较，尚未整理逐时期节点关联；下方连线不按日龄改写。';
  atlasParagraph(stagePanel,context,'atlas-focus-context');
  stagePanel.insertAdjacentHTML('beforeend',evidenceButton(focus.evidenceIds));
  stagePanel.append(atlasElement('small','atlas-focus-source',focus.location));
@@ -315,11 +358,12 @@ function renderAtlasGraph(){
   // 仅绑定已有对象的概念形态；图像不提供时期、身份或关系证据。
   const illustration=cellIllustrations[id];
   if(illustration){const art=atlasElement('span','cell-art cell-art--'+illustration);art.setAttribute('aria-hidden','true');button.append(art);button.classList.add('has-cell-art');}
+  if(state.view==='opc')button.prepend(atlasElement('span','opc-origin-label',id==='dorsal'?'DORSAL · 背侧来源':'VENTRAL · 特定腹侧来源'));
   button.append(atlasElement('strong','',c.name),atlasElement('small','',c.english.includes(' · ')?c.english.split(' · ').at(-1):c.english));if(annotations[id])button.append(atlasElement('span','cell-stage-annotation',annotations[id]));graph.append(button);
  }
  const legend=$('atlas-graph-legend');legend.replaceChildren();
  for(const type of new Set(edges.map(r=>r.relationshipType))){const item=atlasElement('span','atlas-legend-item',relationTypeLabels[type]||'Unknown');item.dataset.type=type;legend.append(item);}
- $('atlas-graph-note').textContent=state.view==='opc'?'来源比较，不绘制方向性关系；仅覆盖已有实验范围，不包含全部腹侧来源。':state.view==='rg'?'作者综合模型；连线不代表每条路径都经过单细胞克隆验证。':'简化的转录状态关系；计算轨迹不等于实验谱系追踪。';
+ $('atlas-graph-note').textContent=state.view==='opc'?'这里比较发育来源，并非两种由外形定义的细胞类型。共享 OPC 示意图不表示两群细胞完全相同；现有整理未建立可用于本图的来源特异形态判据。仅覆盖研究中的特定腹侧来源。':state.view==='rg'?'作者综合模型；连线不代表每条路径都经过单细胞克隆验证。':'简化的转录状态关系；计算轨迹不等于实验谱系追踪。';
  if(ids.some(id=>cellIllustrations[id]))$('atlas-graph-note').textContent+=' 插图为 AI 辅助概念示意，不表示当前时期的实际形态；功能亚型及来源分类可共用形态，不能据此外形判定身份。';
 }
 function renderLiteratureCells(){
@@ -356,6 +400,11 @@ function renderAtlasDetails(){
   atlasParagraph(target,state.stage+' · '+coverageText(coverage('relation',r.id)),'atlas-coverage');
   if(r.view!==state.view)atlasParagraph(target,'该关系属于其他关系视图；保留当前视图和关系选择。','atlas-cross-view');
   atlasEvidence(target,r);
+ }else if(state.view==='trajectory'){
+  target.append(atlasElement('h2','',state.stage+' · 本期阅读'));atlasParagraph(target,stageScenes[state.stage].focus);
+  for(const event of stageData[state.stage].events){const b=atlasElement('button','scene-event',event.title+' →');b.dataset.atlasEvent=event.id;target.append(b);}
+  atlasParagraph(target,stageScenes[state.stage].limit,'atlas-detail-note');
+  target.insertAdjacentHTML('beforeend',evidenceButton(stageGraphFocus[state.stage].evidenceIds));
  }else{
   target.append(atlasElement('h2','','选择一个细胞或关系查看详情'));atlasParagraph(target,state.stage+' · '+relationshipViews[state.view].name,'atlas-detail-note atlas-default-short');
   const context=atlasElement('div','atlas-default-desktop');
@@ -408,7 +457,7 @@ function renderAtlasWorkspace(){
  const focus=document.activeElement;const focusCell=focus?.dataset.cell,focusRelation=focus?.dataset.relation,focusView=focus?.dataset.view,focusStage=focus?.dataset.stage;
  const scroll=$('atlas-graph-scroll');const scrollLeft=scroll.scrollLeft;
  if($('search-dialog').open)$('search-dialog').close();if($('detail-dialog').open)$('detail-dialog').close();
- renderAtlasControls();$('atlas-context-title').textContent=(pageName==='lineage'?'':state.stage+' · ')+relationshipViews[state.view].name;
+ renderAtlasControls();$('atlas-context-title').textContent=state.view==='trajectory'?state.stage+' · 发育场景':relationshipViews[state.view].name;
  renderAtlasGraph();renderLiteratureCells();renderStage(state.stage);if($('stage-events'))renderAtlasEvents();renderAtlasDetails();scroll.scrollLeft=scrollLeft;
  const selectionKey=state.view+':'+(state.selectedCell||state.selectedRelation||'');
  if(selectionKey!==renderedSelection&&scroll.scrollWidth>scroll.clientWidth){const chosen=$('atlas-graph').querySelector('.atlas-node.is-selected')||$('atlas-graph').querySelector('.atlas-node.is-related');if(chosen)scroll.scrollLeft=chosen.offsetLeft-(scroll.clientWidth-chosen.offsetWidth)/2;}

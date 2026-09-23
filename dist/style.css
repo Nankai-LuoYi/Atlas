@@ -238,3 +238,27 @@ body[data-page=atlas] #home-page{display:none}
 .atlas-graph .cell-art--concept-ol{background-position:0% 100%}
 .atlas-graph .cell-art--concept-interneuron{background-position:50% 100%}
 .atlas-graph .cell-art--concept-state{background-position:100% 100%}
+
+/* 时期场景与跨时期模型分开阅读，插图不参与科学状态计算。 */
+.stage-scene[hidden],.atlas-stage-focus[hidden]{display:none}
+.scene-heading{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:24px 0 4px}
+.scene-heading h3{font-size:17px;font-weight:500;margin:0}
+.stage-scene figure{margin:0}
+.stage-scene-art{width:100%;max-width:780px;aspect-ratio:3/2;margin:4px auto 12px;background-size:200% 200%;background-repeat:no-repeat}
+.stage-scene figcaption{border-top:1px solid #e4ecf5;padding:16px 0;color:#45658a;font-size:13px;line-height:1.8}
+.stage-scene figcaption strong{color:#24476f;font-weight:500}
+.stage-scene figcaption p{margin:5px 0}
+.stage-scene .scene-limit{font-size:12px;color:#687f9e}
+.scene-objects{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;padding:12px 0 22px;font-size:13px}
+.scene-objects>span{color:#7387a4;font-size:12px}
+.scene-objects [aria-pressed=true]{text-decoration:underline;text-underline-offset:4px}
+.trajectory-model{min-width:0}
+.trajectory-model>summary{display:none}
+.trajectory-model.is-context-model{border-top:1px solid #dce7f5;border-bottom:1px solid #dce7f5;margin:0 0 20px}
+.trajectory-model.is-context-model>summary{display:list-item;padding:16px 4px;cursor:pointer;color:#426791;font-size:14px}
+.trajectory-model>summary:focus-visible{outline:2px solid #608cbb;outline-offset:3px}
+.scene-event{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #e2ebf6;background:none;color:#355b89;padding:17px 0;font:inherit;font-size:14px;cursor:pointer}
+.scene-event:hover{color:#1761a8}
+.opc-origin-label{color:#526f98;font-size:11px;letter-spacing:.08em;line-height:1.5;border-top:2px solid #91acd0;padding-top:9px;margin-bottom:8px}
+.atlas-node[data-cell=ventral] .opc-origin-label{border-color:#b8a6cf;color:#7f6e99}
+@media(max-width:767px){.scene-heading{gap:8px;margin-top:16px}.scene-heading h3{font-size:16px}.stage-scene-art{margin:10px 0}.stage-scene figcaption{padding:12px 0}.scene-objects{gap:12px}.opc-origin-label{font-size:10px}}
