@@ -138,3 +138,101 @@ const stageGraphFocus = {
  'P1':{evidenceIds:['trajectory'],location:'Fig. 2–3；空间映射及轨迹分支',annotations:{pn:'L5 / L6 CPN 分支与空间位置'}},
  'P4':{evidenceIds:['trajectory'],location:'Fig. 3；轨迹终点群体',annotations:{pn:'L5 / L6 CPN 群体进一步区分'}}
 };
+
+// Di Bella Fig. 1–3 的对象目录；目录归类不是发育关系，不生成额外箭头。
+Object.assign(evidenceNotes,{
+  "db_migration": {
+    "title": "E15.5 迁移与未成熟兴奋性神经元状态",
+    "type": "单细胞重聚类与空间计算映射",
+    "readout": "E15.5",
+    "location": "Fig. 2b；PDF 第2页",
+    "finding": "E15.5 迁移和未成熟兴奋性神经元被重聚类为五个亚状态，Tangram 映射呈现沿皮层径向轴的顺序位置。",
+    "limit": "五个亚状态不等于五种固定细胞类型；空间计算映射与转录连续性不是实验谱系追踪。",
+    "refs": [
+      1
+    ],
+    "species": "小鼠",
+    "region": "未来体感皮层",
+    "label": "不适用（组织采样）",
+    "condition": "发育图谱采样"
+  },
+  "db_deep_p1": {
+    "title": "P1 深层神经元群体的空间映射",
+    "type": "scRNA-seq 分类与 Slide-seq / Tangram 映射",
+    "readout": "P1",
+    "location": "Fig. 2a；Extended Data Fig. 3d–e；PDF 第2页正文",
+    "finding": "CThPN、SCPN、L5/6 CPN、layer 6b 及推定 near-projecting 群体在 P1 被映射到特定位置。",
+    "limit": "分类与计算空间映射不证明祖先—后代关系；near-projecting 身份为推定。",
+    "refs": [
+      1
+    ],
+    "species": "小鼠",
+    "region": "未来体感皮层",
+    "label": "不适用（组织采样）",
+    "condition": "发育图谱采样"
+  },
+  "db_terminal_p4": {
+    "title": "P4 群体作为 URD 轨迹末端",
+    "type": "单细胞分类与计算轨迹",
+    "readout": "P4（轨迹末端取样）；根为 E10.5",
+    "location": "Fig. 3a 图注；PDF 第3页",
+    "finding": "作者以 E10.5 最早祖细胞为根、P4 群体为末端构建 URD 树，区分多个投射神经元群体。",
+    "limit": "末端是分析中的端点，不表示完全成熟；拟时序不是日龄，分类包含关系不是发育连线。",
+    "refs": [
+      1
+    ],
+    "species": "小鼠",
+    "region": "未来体感皮层",
+    "label": "不适用（组织采样）",
+    "condition": "发育图谱采样"
+  },
+  "db_glia_e17": {
+    "title": "E17.5 样本中首次观察到 OPC 与 astrocytes",
+    "type": "单细胞转录组观察",
+    "readout": "E17.5",
+    "location": "Fig. 1；PDF 第1页正文",
+    "finding": "作者在本研究 E17.5 皮层样本中首次观察到 OPC 和星形胶质细胞。",
+    "limit": "仅限定该研究采样与识别，不能推断整个脑的起源时间，也不能据此认定早期不存在。",
+    "refs": [
+      1
+    ],
+    "species": "小鼠",
+    "region": "未来体感皮层",
+    "label": "不适用（组织采样）",
+    "condition": "发育图谱采样"
+  }
+});
+const literatureCellIds=["migrating_immature", "cthpn", "scpn", "cpn_l23", "cpn_l56", "stellate_l4", "layer6b", "near_projecting"];
+extraCells["migrating_immature"]={"title": "迁移／未成熟兴奋性神经元", "english": "Migrating / immature excitatory neurons", "markers": "", "text": "E15.5 重聚类分析中的状态集合，包含五个转录亚状态；此处不将其拆成五种固定细胞类型。", "kind": "transcriptional_state", "refs": [1], "notes": ["db_migration"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "E15.5", "evidenceId": "db_migration", "role": "direct_observation"}]};
+cellEvidenceLinks["migrating_immature"]=[{"evidenceId": "db_migration", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["cthpn"]={"title": "皮层丘脑投射神经元", "english": "Corticothalamic projection neurons · CThPN", "markers": "", "text": "论文划分的皮层丘脑投射神经元群体；P1 有空间映射记录。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4", "db_deep_p1"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}, {"stage": "P1", "evidenceId": "db_deep_p1", "role": "direct_observation"}]};
+cellEvidenceLinks["cthpn"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}, {"evidenceId": "db_deep_p1", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["scpn"]={"title": "皮层下投射神经元", "english": "Subcerebral projection neurons · SCPN", "markers": "", "text": "论文划分的 subcerebral 投射神经元群体；P1 有空间映射记录。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4", "db_deep_p1"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}, {"stage": "P1", "evidenceId": "db_deep_p1", "role": "direct_observation"}]};
+cellEvidenceLinks["scpn"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}, {"evidenceId": "db_deep_p1", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["cpn_l23"]={"title": "第 2/3 层胼胝体投射神经元", "english": "Callosal projection neurons L2/3 · CPN L2/3", "markers": "", "text": "论文中的 L2/3 CPN 群体，列于 P4 轨迹末端；不由此指定其首次产生时期。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}]};
+cellEvidenceLinks["cpn_l23"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["cpn_l56"]={"title": "第 5/6 层胼胝体投射神经元", "english": "Callosal projection neurons L5/6 · CPN L5/6", "markers": "", "text": "本文在 P4 将 L5/6 CPN 分为两个群；轨迹从 P1 区分相关分支，P1 空间映射支持位置差异。此处保留合并名称，不合并其证据时间。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4", "db_deep_p1"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}, {"stage": "P1", "evidenceId": "db_deep_p1", "role": "direct_observation"}]};
+cellEvidenceLinks["cpn_l56"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}, {"evidenceId": "db_deep_p1", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["stellate_l4"]={"title": "第 4 层星状神经元", "english": "Stellate neurons L4", "markers": "", "text": "Fig. 3a 轨迹末端中的第 4 层星状神经元群体；不与星形胶质细胞混同。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}]};
+cellEvidenceLinks["stellate_l4"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["layer6b"]={"title": "第 6b 层神经元", "english": "Layer 6b neurons", "markers": "", "text": "论文深层神经元分类中的群体，P1 有空间映射记录。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4", "db_deep_p1"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}, {"stage": "P1", "evidenceId": "db_deep_p1", "role": "direct_observation"}]};
+cellEvidenceLinks["layer6b"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}, {"evidenceId": "db_deep_p1", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+extraCells["near_projecting"]={"title": "推定近程投射神经元", "english": "Putative near-projecting neurons", "markers": "", "text": "论文将该群体描述为推定 near-projecting 神经元，P1 有空间映射记录；保留推定限定。", "kind": "cell_population", "refs": [1], "notes": ["db_terminal_p4", "db_deep_p1"], "region": "未来体感皮层", "stageEvidenceLinks": [{"stage": "P4", "evidenceId": "db_terminal_p4", "role": "direct_observation"}, {"stage": "P1", "evidenceId": "db_deep_p1", "role": "direct_observation"}]};
+cellEvidenceLinks["near_projecting"]=[{"evidenceId": "db_terminal_p4", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}, {"evidenceId": "db_deep_p1", "role": "direct_observation", "scope": "仅支持该记录的采样群体识别 / 状态或空间映射，不验证所有属性，也不代表实验谱系。"}];
+for(const id of ['astro','opc'])cellEvidenceLinks[id].push({evidenceId:'db_glia_e17',role:'direct_observation',scope:'本研究 E17.5 样本中的首次观察；不是起源时间。'});
+Object.assign(eventAssociations.event_E17_5_astro,{evidenceIds:['db_glia_e17'],temporalContext:{observationStage:'E17.5'}});
+Object.assign(eventAssociations.event_E17_5_opc,{evidenceIds:['db_glia_e17'],temporalContext:{observationStage:'E17.5'}});
+eventAssociations.event_E15_5_migration={cellIds:['migrating_immature'],evidenceIds:['db_migration'],temporalContext:{observationStage:'E15.5'}};
+eventAssociations.event_P1_deep_layers={cellIds:['cthpn','scpn','cpn_l56','layer6b','near_projecting'],evidenceIds:['db_deep_p1'],temporalContext:{observationStage:'P1'}};
+stageGraphFocus['E15.5'].evidenceIds=['db_migration'];
+stageGraphFocus['E17.5'].evidenceIds=['db_glia_e17'];
+stageGraphFocus.P1.evidenceIds=['db_deep_p1','trajectory'];
+stageGraphFocus.P4.evidenceIds=['db_terminal_p4','trajectory'];
+
+// 仅对本轮逐条核实的实际观察关联设置时期证据，不从 displayStage 推导。
+for(const [id,stage,evidenceId] of [
+ ['event_E15_5_migration','E15.5','db_migration'],
+ ['event_P1_deep_layers','P1','db_deep_p1'],
+ ['event_E17_5_astro','E17.5','db_glia_e17'],
+ ['event_E17_5_opc','E17.5','db_glia_e17']
+])eventAssociations[id].stageEvidenceLinks=[{stage,evidenceId,role:'direct_observation'}];

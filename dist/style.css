@@ -207,3 +207,7 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 .atlas-edge[data-type=computational_trajectory] .edge-line{stroke-dasharray:3 5}
 
 .atlas-edge .edge-hit{stroke-width:28}
+
+.atlas-literature-cells{border-top:1px solid #e4ebf4;padding:18px 0;margin-top:8px}.atlas-literature-cells h3{font-size:15px}.literature-cell-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px}.literature-cell{border:0;border-bottom:1px solid #e8eef6;background:none;text-align:left;padding:12px 4px;color:var(--ink)}.literature-cell strong,.literature-cell small,.literature-cell span{display:block;overflow-wrap:anywhere}.literature-cell strong{font-size:13px;font-weight:500}.literature-cell small{font-size:11px;color:#74849d;margin:4px 0}.literature-cell span{font-size:11px;color:#7386a0}.literature-cell.has-stage-record span{color:#345f94}.literature-cell.has-stage-record{border-bottom-color:#8aa9cf}.literature-cell[aria-pressed=true] strong{text-decoration:underline;text-underline-offset:4px;color:#235b9d}.literature-cell:hover{background:#f6f9fd}@media(max-width:600px){.literature-cell-list{grid-template-columns:1fr}}
+
+.atlas-literature-cells .atlas-detail-note{font-size:12px;font-weight:400;line-height:1.7;color:#71839c}
