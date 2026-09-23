@@ -201,3 +201,7 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 .atlas-stage-focus strong{font-weight:600;color:#254d7b}
 .atlas-stage-focus p{margin:5px 0}.atlas-focus-context{font-size:11px;color:#6a7e99}
 .atlas-focus-source{display:inline;margin-left:10px;color:#6a7e99;font-size:10px}
+
+/* 曲线连接保持原有证据线型，圆头减弱机械折线感。 */
+.edge-line,.edge-tip{stroke-linecap:round;stroke-linejoin:round}
+.atlas-edge[data-type=computational_trajectory] .edge-line{stroke-dasharray:3 5}

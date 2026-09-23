@@ -287,11 +287,14 @@ function renderAtlasGraph(){
  const related=new Set(selectedEdge?[selectedEdge.source,selectedEdge.target]:edges.filter(r=>r.source===state.selectedCell||r.target===state.selectedCell).flatMap(r=>[r.source,r.target]));
  const svgNS='http://www.w3.org/2000/svg';const svg=document.createElementNS(svgNS,'svg');svg.setAttribute('width',width);svg.setAttribute('height',height);svg.classList.add('atlas-connectors');
  for(const r of edges){
-  const source=positions.get(r.source),target=positions.get(r.target);const x1=source.x+nodeWidth/2,x2=target.x+nodeWidth/2,y1=source.y+nodeHeight,y2=target.y;const mid=(y1+y2)/2;
+  const source=positions.get(r.source),target=positions.get(r.target);const x1=source.x+nodeWidth/2,x2=target.x+nodeWidth/2,y1=source.y+nodeHeight,y2=target.y;// 贝塞尔分叉保留同一 source/target；弧度只影响绘制，不赋予额外关系。
+  const endY=y2-5,gap=endY-y1;
+  const bend=Math.abs(x2-x1)<1?Math.min(20,nodeWidth*.12):0;
+  const curve=`M ${x1} ${y1} C ${x1+bend} ${y1+gap*.48}, ${x2+bend} ${endY-gap*.48}, ${x2} ${endY}`;
   const g=document.createElementNS(svgNS,'g');g.dataset.relation=r.id;g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',`${cells[r.source].title} → ${cells[r.target].title} · ${relationTypeLabels[r.relationshipType]||'Unknown'}`);g.setAttribute('aria-pressed',String(r.id===state.selectedRelation));
   g.classList.add('atlas-edge');g.classList.toggle('is-selected',r.id===state.selectedRelation);g.classList.toggle('is-related',r.source===state.selectedCell||r.target===state.selectedCell);g.classList.toggle('is-muted',visibleSelection&&(selectedEdge?r.id!==selectedEdge.id:r.source!==state.selectedCell&&r.target!==state.selectedCell));g.dataset.type=r.relationshipType;
   const title=document.createElementNS(svgNS,'title');title.textContent=g.getAttribute('aria-label');g.append(title);
-  for(const cls of ['edge-hit','edge-line']){const path=document.createElementNS(svgNS,'path');path.setAttribute('d',`M ${x1} ${y1} V ${mid} H ${x2} V ${y2-5}`);path.setAttribute('class',cls);g.append(path);}
+  for(const cls of ['edge-hit','edge-line']){const path=document.createElementNS(svgNS,'path');path.setAttribute('d',curve);path.setAttribute('class',cls);g.append(path);}
   const tip=document.createElementNS(svgNS,'path');tip.setAttribute('d',`M ${x2-3} ${y2-9} L ${x2} ${y2-5} L ${x2+3} ${y2-9}`);tip.setAttribute('class','edge-tip');g.append(tip);svg.append(g);
  }
  // 将选中连线置于最上层，避免共用线段被其他淡色连线覆盖。
