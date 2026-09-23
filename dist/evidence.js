@@ -121,3 +121,20 @@ const cellEvidenceLinks = {
  ventral:[['opcOrigin','relationship_support','仅研究覆盖的腹侧遗传来源，不包括 Gsh2 来源。'],['opcDamage','condition_observation','Cit-k 缺失或顺铂损伤条件，不作为正常发育事件。']]
 };
 for(const [id,links] of Object.entries(cellEvidenceLinks))cellEvidenceLinks[id]=links.map(([evidenceId,role,scope])=>({evidenceId,role,scope}));
+
+// 人工核对的时期阅读重点，不是存在/消失表，也不自动升级 coverage。
+// annotations 只将已有论文描述定位到已有节点；未映射对象留在摘要中。
+const stageGraphFocus = {
+ 'E10.5':{evidenceIds:['trajectory'],location:'Fig. 1；早期样本',annotations:{ap:'早期样本主要祖细胞群',ip:'早期祖细胞状态'}},
+ 'E11.5':{evidenceIds:['trajectory'],location:'Fig. 1；早期细胞组成',annotations:{ap:'早期祖细胞背景',ip:'神经发生起点的状态参照'}},
+ 'E12.5':{evidenceIds:['trajectory'],location:'Fig. 1–2；表达梯度与空间映射',annotations:{ap:'祖细胞—神经元连续表达',ip:'连续状态参照，非必经路径',pn:'投射神经元表达梯度'}},
+ 'E13.5':{evidenceIds:['trajectory'],location:'Fig. 3；计算轨迹',annotations:{ap:'祖细胞转录分支',glia:'胶质相关分支，非成熟胶质'}},
+ 'E14.5':{evidenceIds:['trajectory'],location:'Fig. 1、3；作者概括时段的阅读背景',annotations:{pn:'E14.5–E17.5 生成时段背景'}},
+ 'E15.5':{evidenceIds:['trajectory'],location:'Fig. 2b；迁移与未成熟兴奋性神经元',annotations:{pn:'迁移 / 未成熟状态的空间映射'}},
+ 'E16.5':{evidenceIds:['trajectory'],location:'Fig. 1；连续采样与时段背景',annotations:{pn:'连续采样；不指定独有分化事件'}},
+ 'E17.5':{evidenceIds:['trajectory'],location:'Fig. 1；本研究首次检出',annotations:{astro:'本研究首次观察；非起源时间'}},
+ 'E18.5':{evidenceIds:['trajectory'],location:'Fig. 1；围出生期采样背景',annotations:{glia:'胶质发生背景下的采样参照'}},
+ 'P0':{evidenceIds:['p0eomes','eomesFate','p0erk'],location:'独立小鼠研究；表达、标记和干预分开',annotations:{}},
+ 'P1':{evidenceIds:['trajectory'],location:'Fig. 2–3；空间映射及轨迹分支',annotations:{pn:'L5 / L6 CPN 分支与空间位置'}},
+ 'P4':{evidenceIds:['trajectory'],location:'Fig. 3；轨迹终点群体',annotations:{pn:'L5 / L6 CPN 群体进一步区分'}}
+};

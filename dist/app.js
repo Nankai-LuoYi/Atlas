@@ -96,7 +96,7 @@ for(const stage of stages){
  });
 }
 // displayStage 仅控制卡片位置，绝不用于科学时间筛选；未知时间不解析正文补齐。
-const atlasData={cells,relations,events,evidence:evidenceNotes,viewCellIds,relationshipTypes,evidenceRoles};
+const atlasData={cells,relations,events,evidence:evidenceNotes,viewCellIds,relationshipTypes,evidenceRoles,stageGraphFocus};
 const objectEvidenceIds=object=>uniqueEvidenceIds([...(object.evidenceIds||[]),...(object.evidenceLinks||[]).map(link=>link.evidenceId)]);
 function validateData(data=atlasData){
  const issues=[];
@@ -122,6 +122,11 @@ function validateData(data=atlasData){
  for(const [id,e] of Object.entries(data.events)){
   check('event',id,e);
   for(const cellId of e.cellIds||[])if(!Object.hasOwn(data.cells,cellId))issues.push(`event:${id}: unknown cell ${cellId}`);
+ }
+ for(const [stage,record] of Object.entries(data.stageGraphFocus||{})){
+  if(!stages.includes(stage))issues.push('focus: unknown stage '+stage);
+  check('focus',stage,record);
+  for(const id of Object.keys(record.annotations))if(!Object.hasOwn(data.cells,id))issues.push('focus: unknown cell '+id);
  }
  return issues;
 }
@@ -247,7 +252,7 @@ function atlasGraphLayout(ids,edges){
  // 为概念插图预留高度；无插图的来源比较保持原尺寸，布局不参与科学判断。
  const nodeWidth=desktop?(sparse?Math.min(220,available*.30):Math.max(118,Math.min(164,Math.floor((available-44-(leafCount-1)*16)/leafCount)))):(sparse?(available<400?136:164):118);
  const illustrated=ids.some(id=>['ap','ip','pn','astro','opc'].includes(id));
- const nodeHeight=illustrated?(desktop?(sparse?202:172):(sparse?184:158)):(desktop?(sparse?124:108):(sparse?96:80));
+ const nodeHeight=illustrated?(desktop?(sparse?222:172):(sparse?210:158)):(desktop?(sparse?124:108):(sparse?96:80));
  const pitch=desktop?Math.max(nodeWidth+16,(available-44-nodeWidth)/Math.max(1,leafCount-1)):(sparse?(available>=600?246:174):142);
  const step=nodeHeight+(desktop?(sparse?72:58):52);
  const positions=new Map();let leaf=0;
@@ -264,6 +269,17 @@ function atlasGraphLayout(ids,edges){
 }
 function renderAtlasGraph(){
  const ids=viewCellIds[state.view];const edges=relations.filter(r=>r.view===state.view);
+ const focus=stageGraphFocus[state.stage];
+ const annotations=state.view==='trajectory'?focus.annotations:{};
+ let stagePanel=$('atlas-stage-focus');
+ if(!stagePanel){stagePanel=atlasElement('div','atlas-stage-focus');stagePanel.id='atlas-stage-focus';stagePanel.setAttribute('aria-live','polite');$('atlas-graph-legend').before(stagePanel);}
+ stagePanel.replaceChildren();
+ stagePanel.append(atlasElement('strong','',state.stage+' · '+stageData[state.stage].title));
+ atlasParagraph(stagePanel,stageData[state.stage].description);
+ const context=state.view==='trajectory'?(state.stage==='P0'?'P0 未由该转录组时间序列采样；不将 Eomes 阳性群体等同于 IP。':'图中标注为本期文献阅读重点；未标注节点是跨时期模型背景，不表示不存在。'):'本视图是跨时期模型 / 来源比较，尚未整理逐时期节点关联；下方连线不按日龄改写。';
+ atlasParagraph(stagePanel,context,'atlas-focus-context');
+ stagePanel.insertAdjacentHTML('beforeend',evidenceButton(focus.evidenceIds));
+ stagePanel.append(atlasElement('small','atlas-focus-source',focus.location));
  const {positions,width,height,nodeWidth,nodeHeight}=atlasGraphLayout(ids,edges);
  const graph=$('atlas-graph');graph.replaceChildren();graph.style.width=width+'px';graph.style.height=height+'px';graph.style.setProperty('--node-width',nodeWidth+'px');graph.style.setProperty('--node-height',nodeHeight+'px');graph.classList.toggle('is-sparse',ids.length<=5);
  const selectedEdge=edges.find(r=>r.id===state.selectedRelation);
@@ -283,11 +299,12 @@ function renderAtlasGraph(){
  graph.append(svg);
  for(const id of ids){
   const c=cells[id],position=positions.get(id);const button=atlasElement('button','atlas-node');button.dataset.cell=id;button.style.left=position.x+'px';button.style.top=position.y+'px';button.title=c.description;
+  button.classList.toggle('is-stage-focus',Object.hasOwn(annotations,id));button.classList.toggle('is-stage-background',state.view==='trajectory'&&!Object.hasOwn(annotations,id));
   button.classList.toggle('is-selected',state.selectedCell===id);button.classList.toggle('is-related',related.has(id)&&state.selectedCell!==id);button.classList.toggle('is-muted',visibleSelection&&!related.has(id)&&state.selectedCell!==id);button.setAttribute('aria-pressed',String(state.selectedCell===id));
   // 仅绑定已有对象的概念形态；图像不提供时期、身份或关系证据。
   const illustration={ap:'ap',ip:'ip',pn:'pn',astro:'astro',opc:'opc'}[id];
   if(illustration){const art=atlasElement('span','cell-art cell-art--'+illustration);art.setAttribute('aria-hidden','true');button.append(art);button.classList.add('has-cell-art');}
-  button.append(atlasElement('strong','',c.name),atlasElement('small','',c.english.includes(' · ')?c.english.split(' · ').at(-1):c.english));graph.append(button);
+  button.append(atlasElement('strong','',c.name),atlasElement('small','',c.english.includes(' · ')?c.english.split(' · ').at(-1):c.english));if(annotations[id])button.append(atlasElement('span','cell-stage-annotation',annotations[id]));graph.append(button);
  }
  const legend=$('atlas-graph-legend');legend.replaceChildren();
  for(const type of new Set(edges.map(r=>r.relationshipType))){const item=atlasElement('span','atlas-legend-item',relationTypeLabels[type]||'Unknown');item.dataset.type=type;legend.append(item);}
@@ -308,6 +325,7 @@ function renderAtlasDetails(){
   atlasNeighborList(target,'当前关系图上游',edges.filter(r=>r.target===c.id),'source');atlasNeighborList(target,'当前关系图下游',edges.filter(r=>r.source===c.id),'target');
   target.append(atlasElement('h3','','Coverage / Context'));atlasParagraph(target,state.stage+' · '+coverageText(coverage('cell',c.id)),'atlas-coverage');
   if(!viewCellIds[state.view].includes(c.id))atlasParagraph(target,'该对象不在当前关系视图中；保留当前视图和对象选择。','atlas-cross-view');
+  if(state.view==='trajectory'&&stageGraphFocus[state.stage].annotations[c.id]){target.append(atlasElement('h3','','本期文献重点'));atlasParagraph(target,stageGraphFocus[state.stage].annotations[c.id]);target.insertAdjacentHTML('beforeend',evidenceButton(stageGraphFocus[state.stage].evidenceIds));}
   atlasEvidence(target,c,c.id);
  }else if(state.selectedRelation){
   const r=relations.find(r=>r.id===state.selectedRelation);target.append(atlasElement('h2','atlas-relation-names',cells[r.source].name+' → '+cells[r.target].name));atlasParagraph(target,'Relation','atlas-detail-note');

@@ -185,3 +185,19 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 .atlas-graph:not(.is-sparse) .cell-art--pn{background-position:-2px -144px}
 .atlas-graph:not(.is-sparse) .cell-art--astro{background-position:-82px -144px}
 .atlas-graph:not(.is-sparse) .cell-art--opc{background-position:-162px -144px}
+
+/* 自由排列的细胞图与名称；不再把细胞装进流程图卡片。 */
+.atlas-node,.atlas-node.has-cell-art,.atlas-node:hover,.atlas-node.is-selected,.atlas-node.has-cell-art.is-selected,.atlas-node.is-related,.atlas-node.has-cell-art.is-related,.atlas-node.is-muted{border:0;background:transparent;box-shadow:none}
+.atlas-node.is-selected strong{color:#204f90;text-decoration:underline;text-underline-offset:5px;text-decoration-thickness:2px}
+.atlas-node:hover strong{color:#235b9d}
+.atlas-node.is-selected .cell-art{filter:contrast(1.2);outline:1px solid #8ca9d1;outline-offset:4px;border-radius:50%}
+.atlas-node.is-related strong{color:#365f91}
+.atlas-node.is-stage-background .cell-art{opacity:.42}
+.atlas-node.is-stage-background.is-selected .cell-art,.atlas-node.is-stage-background.is-related .cell-art{opacity:.85}
+.atlas-node.is-muted .cell-art{opacity:.4}
+.atlas-node.is-stage-focus strong{font-weight:650}
+.cell-stage-annotation{font-size:11px;line-height:1.5;color:#426d9b;max-width:190px;padding-top:4px}
+.atlas-stage-focus{border-left:2px solid #9cb7d7;padding:4px 0 4px 12px;margin:12px 0 16px;font-size:13px;line-height:1.65}
+.atlas-stage-focus strong{font-weight:600;color:#254d7b}
+.atlas-stage-focus p{margin:5px 0}.atlas-focus-context{font-size:11px;color:#6a7e99}
+.atlas-focus-source{display:inline;margin-left:10px;color:#6a7e99;font-size:10px}
