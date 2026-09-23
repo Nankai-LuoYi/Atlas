@@ -166,3 +166,22 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 .search-group a{display:block;border-top:1px solid #e5ecf5;padding:12px 6px;font-size:14px;overflow-wrap:anywhere}
 .search-group a small{display:block;font-size:11px;color:var(--muted);margin-top:4px}.search-group a:hover,.search-group a:focus{background:#f3f7fd}
 .search-status{font-size:12px;color:var(--muted);padding:10px 0}
+
+/* 细胞概念插图：以 CSS 视窗显示原 PNG，不把样张标题带入节点。 */
+.cell-art{display:block;flex:none;align-self:center;width:96px;height:120px;background-image:url('/assets/cell-illustrations.png');background-size:293.52px 308.64px;background-repeat:no-repeat;mix-blend-mode:multiply;pointer-events:none}
+.cell-art--ap{background-position:-3px -35px}
+.cell-art--ip{background-position:-99px -35px}
+.cell-art--pn{background-position:-3px -173px}
+.cell-art--astro{background-position:-99px -173px}
+.cell-art--opc{background-position:-195px -173px}
+.atlas-node.has-cell-art{padding:6px 5px;gap:2px;background-color:#fff}
+.atlas-node.has-cell-art.is-selected{background-color:#eaf2fd}
+.atlas-node.has-cell-art.is-related{background-color:#f2f6fc}
+.atlas-node.has-cell-art.is-muted .cell-art{opacity:.65}
+.atlas-node.has-cell-art small{line-height:1.3}
+.atlas-graph:not(.is-sparse) .cell-art{height:96px;background-size:244.6px 257.2px;width:80px}
+.atlas-graph:not(.is-sparse) .cell-art--ap{background-position:-2px -29px}
+.atlas-graph:not(.is-sparse) .cell-art--ip{background-position:-82px -29px}
+.atlas-graph:not(.is-sparse) .cell-art--pn{background-position:-2px -144px}
+.atlas-graph:not(.is-sparse) .cell-art--astro{background-position:-82px -144px}
+.atlas-graph:not(.is-sparse) .cell-art--opc{background-position:-162px -144px}

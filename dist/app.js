@@ -244,11 +244,12 @@ function atlasGraphLayout(ids,edges){
  const available=$('atlas-graph-scroll').clientWidth;const sparse=ids.length<=5;
  const desktop=matchMedia('(min-width:1180px)').matches;
  const leafCount=Math.max(1,ids.filter(id=>!children(id).length).length);
- // 桌面仅改变几何比例；小屏继续沿用 B.1 尺寸，布局不参与科学判断。
+ // 为概念插图预留高度；无插图的来源比较保持原尺寸，布局不参与科学判断。
  const nodeWidth=desktop?(sparse?Math.min(220,available*.30):Math.max(118,Math.min(164,Math.floor((available-44-(leafCount-1)*16)/leafCount)))):(sparse?(available<400?136:164):118);
- const nodeHeight=desktop?(sparse?124:108):(sparse?96:80);
+ const illustrated=ids.some(id=>['ap','ip','pn','astro','opc'].includes(id));
+ const nodeHeight=illustrated?(desktop?(sparse?202:172):(sparse?184:158)):(desktop?(sparse?124:108):(sparse?96:80));
  const pitch=desktop?Math.max(nodeWidth+16,(available-44-nodeWidth)/Math.max(1,leafCount-1)):(sparse?(available>=600?246:174):142);
- const step=desktop?(sparse?214:166):(sparse?154:132);
+ const step=nodeHeight+(desktop?(sparse?72:58):52);
  const positions=new Map();let leaf=0;
  function visit(id,depth,path=new Set()){
   if(path.has(id))return 0; // 数据异常时防止递归死循环；不推导额外边。
@@ -283,11 +284,15 @@ function renderAtlasGraph(){
  for(const id of ids){
   const c=cells[id],position=positions.get(id);const button=atlasElement('button','atlas-node');button.dataset.cell=id;button.style.left=position.x+'px';button.style.top=position.y+'px';button.title=c.description;
   button.classList.toggle('is-selected',state.selectedCell===id);button.classList.toggle('is-related',related.has(id)&&state.selectedCell!==id);button.classList.toggle('is-muted',visibleSelection&&!related.has(id)&&state.selectedCell!==id);button.setAttribute('aria-pressed',String(state.selectedCell===id));
+  // 仅绑定已有对象的概念形态；图像不提供时期、身份或关系证据。
+  const illustration={ap:'ap',ip:'ip',pn:'pn',astro:'astro',opc:'opc'}[id];
+  if(illustration){const art=atlasElement('span','cell-art cell-art--'+illustration);art.setAttribute('aria-hidden','true');button.append(art);button.classList.add('has-cell-art');}
   button.append(atlasElement('strong','',c.name),atlasElement('small','',c.english.includes(' · ')?c.english.split(' · ').at(-1):c.english));graph.append(button);
  }
  const legend=$('atlas-graph-legend');legend.replaceChildren();
  for(const type of new Set(edges.map(r=>r.relationshipType))){const item=atlasElement('span','atlas-legend-item',relationTypeLabels[type]||'Unknown');item.dataset.type=type;legend.append(item);}
  $('atlas-graph-note').textContent=state.view==='opc'?'来源比较，不绘制方向性关系；仅覆盖已有实验范围，不包含全部腹侧来源。':state.view==='rg'?'作者综合模型；连线不代表每条路径都经过单细胞克隆验证。':'简化的转录状态关系；计算轨迹不等于实验谱系追踪。';
+ if(ids.some(id=>['ap','ip','pn','astro','opc'].includes(id)))$('atlas-graph-note').textContent+=' 细胞插图为 AI 辅助概念示意，不表示当前时期的实际形态。';
 }
 function atlasNeighborList(parent,label,edges,direction){
  parent.append(atlasElement('h3','',label));const ids=[...new Set(edges.map(r=>r[direction]))];
