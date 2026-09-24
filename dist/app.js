@@ -291,6 +291,21 @@ const stageScenes={
  'P1':{sheet:2,tile:2,focus:'出生后神经元群体与组织位置',reading:'不同径向位置的年轻神经元，提示 P1 空间映射中的多种投射神经元群体。',cells:['cthpn','scpn','cpn_l56'],limit:'示意形态不用于识别分子亚型；具体位置依据原文空间图。'},
  'P4':{sheet:2,tile:3,focus:'进一步分化，仍在发育',reading:'以多种年轻神经元状态呈现观察窗口末端的分化主题。',cells:['cpn_l23','cpn_l56','stellate_l4'],limit:'P4 是该研究窗口终点，不是神经系统成熟终点；示意形态不能诊断亚型。'}
 };
+// 编号仅解释插图中设计的代表性角色，不是对真实细胞逐个鉴定，也不写入科学数据。
+const sceneAnnotations={
+ 'E10.5':[[20,63,'顶端祖细胞 · AP','长轴向突起、靠近内侧的祖细胞示意。'],[38,53,'中间祖细胞 · IP','短突起细胞代表中间祖细胞主题。']],
+ 'E11.5':[[16.4,61.5,'顶端祖细胞 · AP','贯穿组织方向的长突起示意。'],[32.8,60.4,'中间祖细胞 · IP','祖细胞背景中的短突起细胞。'],[21.3,20.2,'Cajal–Retzius 细胞','外侧横向细胞的示意角色。']],
+ 'E12.5':[[27,61,'顶端祖细胞 · AP','下方长突起祖细胞。'],[18.6,52,'中间祖细胞 · IP','短突起祖细胞的概念形态。'],[54,21.5,'迁移／未成熟神经元','径向排列的细长细胞表示连续变化，不据此外形划分亚型。']],
+ 'E13.5':[[39,65,'顶端祖细胞 · AP','保留祖细胞形态的背景。'],[61,65,'胶质相关祖细胞状态','紫色祖细胞提示转录状态分支，不是成熟星形胶质细胞。'],[28,12,'中间神经元观察主题','横向细胞作为阅读提示；不凭插图区分 MGE / CGE 来源。'],[59,42,'神经元相关状态','细长年轻细胞表现神经元分化背景。']],
+ 'E14.5':[[34,77,'顶端祖细胞 · AP','下方长突起祖细胞。'],[49.5,59,'中间祖细胞 · IP','短突起祖细胞的示意角色。'],[21,42,'迁移中的神经元','沿径向伸长的年轻神经元。'],[56.5,40,'未成熟神经元','上方多突起细胞表示分化状态，不指定已成熟的层或亚型。']],
+ 'E15.5':[[35,79,'祖细胞背景','下方长突起细胞提供迁移的组织语境。'],[23.5,58,'迁移神经元','细长形态示意沿径向变化的状态。'],[80.5,37,'迁移／未成熟神经元','多突起形态同属阅读主题，不等于一个独立分子亚型。']],
+ 'E16.5':[[32.2,78.5,'祖细胞背景','延续神经发生的祖细胞语境。'],[32.4,51.5,'迁移神经元','细长的年轻细胞。'],[71,39.2,'未成熟神经元','分化中的细胞；不代表本期独有事件。']],
+ 'E17.5':[[60,51,'年轻神经元','蓝色细长细胞代表神经元背景。'],[16.7,25,'少突胶质前体细胞 · OPC','紫色短突起细胞的示意角色，不表示成熟少突胶质细胞。'],[39.7,28.3,'星形胶质细胞主题','分枝细胞提示本研究观察到的群体，不代表成熟形态。']],
+ 'E18.5':[[33.1,63.5,'神经元相关状态','长突起细胞表现继续分化的神经元背景。'],[80.8,53.5,'胶质相关细胞','紫色分枝细胞代表胶质主题；不按轮廓区分具体亚型。'],[45.3,83,'祖细胞背景','内侧的细胞用于组织语境示意，不表达精确比例。']],
+ 'P0':[[69,59,'EOMES 阳性细胞示意','紫色核提示表达观察，不独立定义 IP 身份或最终命运。'],[24,67,'背景细胞','未指定身份的组织背景，不据颜色推断阴性实验结果。']],
+ 'P1':[[28.3,22.5,'投射神经元群体','上方年轻神经元的示意角色，不按形态指定 CThPN / SCPN。'],[67.4,53.8,'不同径向位置的神经元','强调空间位置主题，不将细胞轮廓作为层或亚型判据。']],
+ 'P4':[[24.4,60.4,'分化中的神经元','仍在发育的年轻神经元，不表示成熟终点。'],[65.1,59.6,'其他神经元状态','形态变化用于解释多样性，不与分子亚型一一对应。'],[73.5,21.2,'胶质相关细胞','分枝形态作为胶质背景示意，不由其外形认定具体亚型。']]
+};
 const sceneSheets=['胚胎早期发育场景.png','神经发生与迁移场景.png','围出生期发育场景.png'];
 function renderStageScene(){
  let scene=$('stage-scene'),model=$('trajectory-model');
@@ -309,8 +324,15 @@ function renderStageScene(){
  const item=stageScenes[state.stage];scene.dataset.stage=state.stage;
  const heading=atlasElement('div','scene-heading');heading.append(atlasElement('span','eyebrow','DEVELOPMENTAL SCENE'),atlasElement('h3','',item.focus));scene.append(heading);
  const figure=atlasElement('figure','');const art=atlasElement('div','stage-scene-art');art.setAttribute('role','img');art.setAttribute('aria-label',state.stage+'：'+item.reading+' 概念示意，非实测组织图。');
- art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[item.sheet]}")`;art.style.clipPath=item.sheet===2&&item.tile<2?'inset(0 0 5% 0)':'';art.style.backgroundPosition=(item.tile%2)*100+'% '+Math.floor(item.tile/2)*100+'%';figure.append(art);
- const caption=atlasElement('figcaption','');caption.append(atlasElement('strong','',state.stage+' · '+item.focus));atlasParagraph(caption,item.reading);atlasParagraph(caption,'AI 辅助概念插图 · 不按比例；颜色、形态与数量不代表实测或亚型判据。','scene-limit');atlasParagraph(caption,item.limit,'scene-limit');figure.append(caption);scene.append(figure);
+ art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[item.sheet]}")`;art.style.clipPath=item.sheet===2&&item.tile<2?'inset(0 0 5% 0)':'';art.style.backgroundPosition=(item.tile%2)*100+'% '+Math.floor(item.tile/2)*100+'%';const canvas=atlasElement('div','scene-canvas');canvas.append(art);
+ const callouts=document.createElementNS('http://www.w3.org/2000/svg','svg');callouts.setAttribute('viewBox','0 0 100 100');callouts.setAttribute('preserveAspectRatio','none');callouts.setAttribute('aria-hidden','true');callouts.classList.add('scene-callouts');canvas.append(callouts);
+ const key=atlasElement('ol','scene-key');key.setAttribute('aria-label',state.stage+' 插图标注');
+ for(const [i,[x,y,name,description]] of sceneAnnotations[state.stage].entries()){
+  const pin=atlasElement('span','scene-pin',String(i+1));pin.style.left=(x+4)+'%';pin.style.top=(y-5)+'%';const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('y1',y);line.setAttribute('x2',x+4);line.setAttribute('y2',y-5);callouts.append(line);pin.setAttribute('aria-hidden','true');canvas.append(pin);
+  const row=atlasElement('li','');row.append(atlasElement('span','scene-key-number',String(i+1)));const text=atlasElement('div','');text.append(atlasElement('strong','',name));atlasParagraph(text,description);row.append(text);key.append(row);
+ }
+ figure.append(canvas,key);
+ const caption=atlasElement('figcaption','');caption.append(atlasElement('strong','',state.stage+' · '+item.focus));atlasParagraph(caption,item.reading);atlasParagraph(caption,'编号标出代表性示意角色，不是逐个细胞的实验鉴定。AI 辅助插图不按比例，颜色与数量不代表实测。','scene-limit');atlasParagraph(caption,item.limit,'scene-limit');figure.append(caption);scene.append(figure);
  const links=atlasElement('div','scene-objects');links.append(atlasElement('span','','阅读相关对象'));
  for(const id of item.cells){const b=atlasElement('button','text-link',cells[id].name);b.dataset.cell=id;b.setAttribute('aria-pressed',String(state.selectedCell===id));links.append(b);}
  if(!item.cells.length){const b=atlasElement('button','text-link','EOMES 表达观察');b.dataset.evidence='p0eomes';links.append(b);}
@@ -327,10 +349,6 @@ function renderAtlasGraph(){
  stagePanel.append(atlasElement('strong','',state.stage+' · '+stageData[state.stage].title));
  atlasParagraph(stagePanel,stageData[state.stage].description);
  stagePanel.hidden=state.view!=='trajectory';
- const context=state.view==='trajectory'?(state.stage==='P0'?'P0 来自独立研究，表达、群体标记及干预分开阅读。':'下方场景随时期变化；跨时期的计算关系模型可另行展开。'):'本视图是跨时期模型 / 来源比较，尚未整理逐时期节点关联；下方连线不按日龄改写。';
- atlasParagraph(stagePanel,context,'atlas-focus-context');
- stagePanel.insertAdjacentHTML('beforeend',evidenceButton(focus.evidenceIds));
- stagePanel.append(atlasElement('small','atlas-focus-source',focus.location));
  const {positions,width,height,nodeWidth,nodeHeight}=atlasGraphLayout(ids,edges);
  const graph=$('atlas-graph');graph.replaceChildren();graph.style.width=width+'px';graph.style.height=height+'px';graph.style.setProperty('--node-width',nodeWidth+'px');graph.style.setProperty('--node-height',nodeHeight+'px');graph.classList.toggle('is-sparse',ids.length<=5);
  const selectedEdge=edges.find(r=>r.id===state.selectedRelation);

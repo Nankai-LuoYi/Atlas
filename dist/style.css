@@ -262,3 +262,17 @@ body[data-page=atlas] #home-page{display:none}
 .opc-origin-label{color:#526f98;font-size:11px;letter-spacing:.08em;line-height:1.5;border-top:2px solid #91acd0;padding-top:9px;margin-bottom:8px}
 .atlas-node[data-cell=ventral] .opc-origin-label{border-color:#b8a6cf;color:#7f6e99}
 @media(max-width:767px){.scene-heading{gap:8px;margin-top:16px}.scene-heading h3{font-size:16px}.stage-scene-art{margin:10px 0}.stage-scene figcaption{padding:12px 0}.scene-objects{gap:12px}.opc-origin-label{font-size:10px}}
+
+/* 编号和图例使用网页文字，随画面等比定位，不烘焙进插图。 */
+.scene-canvas{position:relative;width:100%;max-width:780px;margin:4px auto 12px}
+.scene-canvas .stage-scene-art{margin:0;max-width:none}
+.scene-pin{position:absolute;transform:translate(-50%,-50%);width:25px;height:25px;border:1px solid #627fa4;border-radius:50%;background:#fff;color:#234b7b;display:grid;place-items:center;font:600 12px/1 var(--sans);box-shadow:0 0 0 3px #ffffffa8;pointer-events:none}
+.scene-key{list-style:none;margin:8px 0 22px;padding:16px 0 0;border-top:1px solid #e4ecf5;display:grid;grid-template-columns:1fr 1fr;gap:18px 26px}
+.scene-key li{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.scene-key-number{flex:none;width:23px;height:23px;border:1px solid #94abc7;border-radius:50%;display:grid;place-items:center;color:#315981;font-size:12px}
+.scene-key strong{font-size:13px;font-weight:600;color:#294d75}
+.scene-key p{font-size:12px;line-height:1.7;color:#6b809b;margin-top:3px}
+.brand img.brand-icon{width:48px;height:48px}
+@media(max-width:767px){.scene-key{grid-template-columns:1fr;gap:13px;margin-bottom:18px}.scene-pin{width:21px;height:21px;font-size:11px;box-shadow:0 0 0 2px #ffffffad}.brand img.brand-icon{width:40px;height:40px}.scene-canvas{margin:10px auto}}
+
+.scene-callouts{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.scene-callouts line{stroke:#6381a5;stroke-width:1;vector-effect:non-scaling-stroke}
