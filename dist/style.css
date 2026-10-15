@@ -212,24 +212,8 @@ body[data-page=home] .stage-section{grid-template-columns:minmax(0,1fr) auto;mar
 
 .atlas-literature-cells .atlas-detail-note{font-size:12px;font-weight:400;line-height:1.7;color:#71839c}
 
-/* 全程 Atlas：时间同时展开，旧单时期工作区只保留给 Lineage。 */
+/* Atlas 保留全程概览，Lineage 使用原生关系工作区。 */
 body[data-page=atlas] #home-page{display:none}
-.atlas-overview{width:min(1760px,calc(100% - 64px));margin:0 auto 40px;padding-top:22px;border-top:1px solid #dce6f2}
-.overview-heading{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;margin-bottom:28px}.overview-heading h2{font-size:20px;font-weight:500;margin:0}.overview-heading>a{margin-left:auto;font-size:12px}
-.development-rail{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));align-items:start}
-.development-moment{min-width:0;position:relative}.moment-head{position:relative;text-align:center;border-bottom:2px solid #c7d9ed;padding-bottom:14px;margin-bottom:22px}.moment-head:after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#95b3d8;bottom:-5px;left:calc(50% - 4px);box-shadow:0 0 0 4px white}
-.moment-head .stage-illustration{width:min(76px,100%);height:76px;margin:auto;opacity:1}.moment-head h3{font:600 15px var(--sans);margin:8px 0 0;color:#345e93}
-.is-postnatal .moment-head{border-color:#c7bfdf}.is-postnatal .moment-head:after{background:#a596c9}.is-url-stage .moment-head h3{color:#164e9f;text-decoration:underline;text-underline-offset:6px}
-.moment-body{padding:0 10px;border-left:1px solid #edf1f7;min-width:0}.development-moment:first-child .moment-body{border-left:0}.moment-body h4{font-size:14px;line-height:1.7;font-weight:600;margin:0 0 14px;min-height:72px;color:#244c7d}.moment-summary{font-size:12px;line-height:1.9;color:#5b7292;margin:0 0 20px;overflow-wrap:anywhere}
-.moment-cells{margin:14px 0 18px}.moment-label{display:block;font-size:10px;line-height:1.6;color:#8292aa;margin-bottom:6px}.moment-cell{display:block;border:0;border-bottom:1px solid #dce6f2;background:none;text-align:left;padding:7px 0;color:#345e93;font-size:12px;line-height:1.7;width:100%;overflow-wrap:anywhere}.moment-cell:hover{color:#175ac0;background:#f5f8fc}
-.moment-events{border-top:1px solid #e5edf6;padding-top:8px}.moment-event{display:block;text-align:left;width:100%;padding:6px 0;border:0;background:none;color:#6c7f99;font-size:11px;line-height:1.8;overflow-wrap:anywhere}.moment-event:hover{color:#205c9e}.moment-evidence{margin-top:14px}.moment-evidence .evidence-link{font-size:11px}
-.overview-boundary{font-size:12px;line-height:1.8;color:#7788a1;padding-top:24px;margin-top:24px;border-top:1px solid #e3ebf5}
-@media(max-width:1179px){.atlas-overview{width:calc(100% - 48px)}.development-rail{display:block}.development-moment{display:grid;grid-template-columns:112px minmax(0,1fr)}.moment-head{border:0;border-right:2px solid #c7d9ed;margin:0;padding:12px 24px 30px 0}.moment-head:after{bottom:auto;top:54px;left:auto;right:-5px}.is-postnatal .moment-head{border-right-color:#c7bfdf}.moment-body,.development-moment:first-child .moment-body{border:0;border-bottom:1px solid #e6edf5;padding:16px 0 28px 28px}.moment-body h4{min-height:0;font-size:17px;margin:0 0 8px}.moment-summary{font-size:13px;margin-bottom:12px}.moment-events{display:flex;gap:12px;flex-wrap:wrap}.moment-event{width:auto}.moment-cells{display:flex;flex-wrap:wrap;gap:6px 14px}.moment-label{width:100%}.moment-cell{width:auto}.moment-evidence{margin-top:8px}}
-@media(max-width:600px){.atlas-overview{width:calc(100% - 36px)}.overview-heading{gap:12px;margin-bottom:18px}.overview-heading h2{font-size:18px}.overview-heading>a{margin-left:0}.development-moment{grid-template-columns:78px minmax(0,1fr)}.moment-head{padding-right:12px}.moment-head .stage-illustration{width:62px;height:62px}.moment-head h3{font-size:14px}.moment-body,.development-moment:first-child .moment-body{padding-left:18px}.moment-body h4{font-size:15px}.moment-summary{font-size:12px}.moment-events{display:block}.moment-event{font-size:12px}}
-
-/* 全程标题直接打开原证据详情，取消单独的 Evidence 行。 */
-.moment-title{display:block;width:100%;text-align:left;border:0;background:none;padding:0;color:inherit;font:inherit;line-height:inherit;cursor:pointer;text-decoration:underline;text-decoration-color:#bccde2;text-decoration-thickness:1px;text-underline-offset:5px}
-.moment-title:hover{color:#245d9e;text-decoration-color:currentColor}.moment-title:focus-visible{outline:2px solid #6f95c2;outline-offset:4px;border-radius:2px}
 /* 补充概念图为等距六格 PNG，功能分类共用图，不伪造亚型形态差异。 */
 .atlas-graph .cell-art[class*="cell-art--concept-"]{background-image:url('/assets/细胞补充概念图.png');background-size:300% 200%;width:100px;height:100px}
 .atlas-graph .cell-art--concept-rg{background-position:0% 0%}
@@ -276,3 +260,66 @@ body[data-page=atlas] #home-page{display:none}
 @media(max-width:767px){.scene-key{grid-template-columns:1fr;gap:13px;margin-bottom:18px}.scene-pin{width:21px;height:21px;font-size:11px;box-shadow:0 0 0 2px #ffffffad}.brand img.brand-icon{width:40px;height:40px}.scene-canvas{margin:10px auto}}
 
 .scene-callouts{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}.scene-callouts line{stroke:#6381a5;stroke-width:1;vector-effect:non-scaling-stroke}
+
+/* 全程观察概览：时期全部保留，长正文进入共用阅读区。 */
+.atlas-overview{width:min(1760px,calc(100% - 64px));color:var(--ink)}
+.overview-heading{margin-bottom:18px}.overview-heading h2{font-family:var(--sans);font-size:20px}
+.observation-legend{display:flex;gap:10px 22px;flex-wrap:wrap;margin:10px 0 22px;font-size:12px;color:#506786}
+.observation-legend span,.observation-record{--record-color:#4b76a8}
+.observation-legend span:before,.observation-record:before{content:'';display:inline-block;width:7px;height:7px;border:1.5px solid var(--record-color);background:var(--record-color);border-radius:50%;margin-right:7px;flex:none}
+[data-kind=context]{--record-color:#6e7097!important}[data-kind=context]:before{background:white;border-style:dashed}
+[data-kind=unclassified]{--record-color:#7c8798!important}[data-kind=unclassified]:before{background:transparent;border-style:dotted}
+[data-kind=followup]{--record-color:#78648f!important}[data-kind=followup]:before{background:white;border-radius:1px;transform:rotate(45deg)}
+[data-kind=intervention]{--record-color:#876d74!important}[data-kind=intervention]:before{border-radius:0;background:#f2eaf0}
+.overview-map-scroll{width:100%;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#9cb4d3 #f5f8fc;border-bottom:1px solid #dce6f2;position:relative}
+.overview-map{min-width:1120px;display:table;width:100%;border-top:1px solid #dce6f2}
+.overview-time-row,.observation-row{display:grid;grid-template-columns:160px repeat(12,minmax(0,1fr));align-items:stretch}
+.overview-corner,.observation-row-label{position:sticky;left:0;z-index:2;background:white;padding:14px 12px 14px 0;border-right:1px solid #dce6f2;font-size:13px;display:flex;flex-direction:column;justify-content:center;text-align:left}
+.overview-corner small{font-size:11px;color:#596f8d;margin-top:6px;line-height:1.5}.overview-corner strong{font-weight:500}
+.overview-time-cell{min-width:0;border-bottom:1px solid #dce6f2}
+.overview-stage{width:100%;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 2px 15px;position:relative;border-bottom:2px solid transparent}
+.overview-stage .stage-illustration{width:62px;height:62px;opacity:1;margin:0}
+.overview-stage strong{font-size:14px;font-weight:600;color:#345a85}.overview-stage small{font-size:11px;line-height:1.5;color:#596f8d;text-align:center;min-height:33px}
+.overview-stage[aria-pressed=true]{border-bottom-color:#356aab;background:#f3f7fc}.overview-stage[aria-pressed=true] strong{color:#1c549a}.overview-stage:hover{background:#f7faff}
+.observation-row+.observation-row{border-top:1px solid #e3eaf3}.observation-row-label{font-weight:500;line-height:1.7}
+.observation-slot{min-width:0;border-right:1px solid #edf1f6;padding:12px 6px;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.observation-slot.is-context-stage{background:#f8fbff}.observation-slot:last-child{border-right:0}
+.observation-record{display:block;text-align:left;font-size:12px;line-height:1.75;color:#36567e;padding:5px 0;overflow-wrap:break-word;width:100%}
+.observation-record:hover{color:#1a4f91;text-decoration:underline;text-underline-offset:3px}
+.observation-empty{font-size:12px;color:#7a8aa0;text-align:center}
+.overview-boundary{margin:0;padding:15px 0 20px;border:0;color:#526a88;font-size:12px;line-height:1.8}
+.overview-reading{border-top:1px solid #dce6f2;padding:22px 0;scroll-margin-top:120px}
+.overview-reading-heading{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:16px}.overview-reading-heading h2{font:500 17px var(--sans)}.overview-reading-heading>span{font-size:14px;color:#355f94}.overview-reading-heading a{margin-left:auto}
+.overview-reading h3,.overview-reading-entry h3{font:600 19px/1.6 var(--sans);margin:10px 0}
+.overview-stage-summary{font-size:14px;line-height:1.9;color:#4c6484;max-width:1000px}
+.overview-event-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:20px}
+.overview-event-row{border-top:1px solid #e0e8f3;padding-top:12px;min-width:0}.overview-event-title{padding:3px 0;font-size:14px;color:#2c568a;text-align:left;text-decoration:underline;text-decoration-color:#bacbdf;text-underline-offset:4px}
+.overview-event-row p{font-size:13px;line-height:1.85;color:#526a88;margin-top:7px}
+.overview-observed{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;margin-top:22px;font-size:13px}.overview-observed>span{color:#526a88}.overview-observed button{padding:5px 0}
+.overview-all-reading{border-top:1px solid #dce6f2;border-bottom:1px solid #dce6f2;margin-top:8px}.overview-all-reading>summary{padding:18px 0;cursor:pointer;color:#365e8f;font-size:14px}
+.overview-reading-entry{padding:18px 0 28px;border-top:1px solid #e3eaf3;scroll-margin-top:120px}
+@media(max-width:1024px){.atlas-overview{width:calc(100% - 48px)}.overview-event-list{gap:16px}.overview-stage-summary{font-size:14px}}
+@media(max-width:600px){.atlas-overview{width:calc(100% - 36px)}.overview-heading h2{font-size:18px;line-height:1.7}.overview-heading>a{margin-left:0}.observation-legend{gap:8px 15px;font-size:11px;margin-bottom:15px}.overview-corner,.observation-row-label{padding-right:8px;font-size:12px}.overview-time-row,.observation-row{grid-template-columns:108px repeat(12,minmax(0,1fr))}.overview-map{min-width:1068px}.overview-reading-heading a{margin-left:0}.overview-event-list{grid-template-columns:1fr;gap:15px}.overview-reading h3,.overview-reading-entry h3{font-size:17px}.overview-reading{padding:20px 0}.overview-stage-summary{font-size:13px}}
+
+/* 关系模型先行，场景作为可展开的解释层。 */
+.trajectory-model.is-context-model{border:0;margin-bottom:12px}.trajectory-model.is-context-model>summary{display:none}
+.stage-scene{margin:14px 0 10px;border-top:1px solid #dce6f2;border-bottom:1px solid #dce6f2}
+.scene-disclosure{padding:17px 0;font-size:14px;color:#365e8f;cursor:pointer}.stage-scene .scene-heading{margin-top:10px}
+button.scene-pin{pointer-events:auto;cursor:pointer;width:30px;height:30px;box-shadow:0 0 0 3px #ffffffb8}
+button.scene-pin:hover,button.scene-pin[aria-pressed=true]{background:#e9f1fc;border-color:#285b98;color:#164678}
+button.scene-key-label{display:block;padding:2px 0;text-align:left;color:#285887;font:600 13px/1.7 var(--sans);text-decoration:underline;text-decoration-color:#bdcde1;text-underline-offset:4px}
+.scene-key-label[aria-pressed=true]{color:#164b90}.scene-key p,.stage-scene .scene-limit{color:#526988}
+.lineage-workspace .atlas-node{justify-content:flex-start;padding-top:6px;gap:4px}.lineage-workspace .atlas-node strong{font-size:13px;line-height:1.5;overflow-wrap:normal;word-break:normal}.lineage-workspace .atlas-node small{font-size:12px;color:#566d8a}
+.lineage-workspace .atlas-node.is-muted strong{color:#53657f}.lineage-workspace .atlas-node.is-muted small{color:#596d87}
+.lineage-workspace .atlas-graph .cell-art{width:80px;height:96px;background-size:244.6px 257.2px}
+.lineage-workspace .atlas-graph .cell-art--ap{background-position:-2px -29px}.lineage-workspace .atlas-graph .cell-art--ip{background-position:-82px -29px}.lineage-workspace .atlas-graph .cell-art--pn{background-position:-2px -144px}.lineage-workspace .atlas-graph .cell-art--astro{background-position:-82px -144px}.lineage-workspace .atlas-graph .cell-art--opc{background-position:-162px -144px}
+.lineage-workspace .atlas-graph .cell-art[class*="cell-art--concept-"]{width:96px;height:96px}
+.lineage-workspace .atlas-graph-note,.lineage-workspace .atlas-detail-note{color:#526a88;font-size:12px}.lineage-workspace .atlas-map-heading .eyebrow,.lineage-workspace .atlas-detail-heading .eyebrow{color:#536f97}
+.lineage-workspace .atlas-node.is-stage-background .cell-art{opacity:.7}.lineage-workspace .atlas-node.is-muted .cell-art{opacity:.52}
+.atlas-literature-cells>summary{font-size:14px;color:#355d8c;cursor:pointer;padding:3px 0 12px}
+.selection-feedback{display:none}
+.evidence-count-note{font-size:12px;color:#526988;margin:14px 0}.evidence-count-note summary{cursor:pointer}.evidence-count-note p{font-size:12px;margin:8px 0}
+.evidence-subject{font-size:14px;color:#48658b;margin:12px 0}.evidence-claim{border-left:2px solid #92acce;padding:8px 12px;margin:16px 0;font-size:13px}.evidence-claim strong{font-size:12px;color:#43638c}.evidence-claim p{font-size:13px;margin-top:5px;line-height:1.8}.evidence-claim .evidence-location{font-size:12px;color:#526988}.evidence-finding{font-size:14px;line-height:1.9;margin:16px 0}
+.evidence-facts dt{color:#526988}.selection-dialog h2{font:600 22px/1.6 var(--sans);margin:12px 0}.selection-dialog h3{font:600 13px/1.7 var(--sans);margin:22px 0 8px;color:#466387}.selection-dialog p{font-size:14px;line-height:1.9}.selection-dialog .atlas-detail-note{font-size:12px;color:#526988}
+@media(max-width:1024px){body[data-page=lineage].has-selection{padding-bottom:100px}.selection-feedback:not([hidden]){display:flex;align-items:center;gap:12px;position:fixed;z-index:25;bottom:max(12px,env(safe-area-inset-bottom));left:24px;right:24px;background:#f7faff;border:1px solid #afc2dc;padding:12px 16px;border-radius:5px}.selection-feedback-name{min-width:0;flex:1;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.selection-feedback button{font-size:13px;white-space:nowrap;padding:9px 3px;color:#235589}.selection-feedback .selection-feedback-clear{font-size:12px;color:#526988}.lineage-workspace .atlas-graph-scroll{scroll-margin-top:150px}}
+@media(max-width:600px){.selection-feedback:not([hidden]){left:12px;right:12px;padding:10px 12px;gap:9px}.selection-feedback-name{font-size:12px}button.scene-pin{width:28px;height:28px}.lineage-workspace .atlas-map-heading p{font-size:12px}.lineage-workspace .page-intro{padding-top:18px}}

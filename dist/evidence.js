@@ -236,3 +236,56 @@ for(const [id,stage,evidenceId] of [
  ['event_E17_5_astro','E17.5','db_glia_e17'],
  ['event_E17_5_opc','E17.5','db_glia_e17']
 ])eventAssociations[id].stageEvidenceLinks=[{stage,evidenceId,role:'direct_observation'}];
+
+// 2026-10-15：逐条核对本地 PDF 后，将主张定位到现有 Evidence；不复制记录。
+// role 限定支持性质，location 指原文面板；displayStage 仍不参与科学时间推导。
+const reviewedEventClaims = {
+ event_E10_5_ap:['trajectory','direct_observation','Fig. 1b–c；PDF 第 1 页正文','早期样本主要由 AP 与 IP 构成；此处仅支持采样组成及文中表达识别线索。'],
+ event_E10_5_ip:['trajectory','direct_observation','Fig. 1b–c；PDF 第 1 页正文','早期 IP 群体及其表达识别线索；不证明 EOMES 阳性细胞均为同一种 IP。'],
+ event_E11_5_cajal_retzius:['trajectory','direct_observation','Fig. 1d；PDF 第 2 页正文','本研究从 E11.5 检测到 Cajal–Retzius 群体；不是整个脑中的首次生成时间。'],
+ event_E12_5_continuity:['trajectory','direct_observation','Fig. 1b–c；PDF 第 1 页正文','从 E12.5 观察到祖细胞与投射神经元间的连续表达梯度；不是单细胞谱系追踪。'],
+ event_E12_5_deep_layers:['trajectory','context','Fig. 1a；PDF 第 1 页 Comprehensive atlas 段落','E12.5–E13.5 是作者概括的第 6、5 层兴奋性神经元生成时段，不是逐细胞出生日期。'],
+ event_E12_5_spatial:['trajectory','context','Fig. 2a；PDF 第 2 页；Methods: Slide-seq / Tangram','E12.5 有年龄匹配的 Slide-seq v2 与计算映射；不等于实验谱系。'],
+ event_E13_5_branches:['trajectory','relationship_support','Fig. 3a；Extended Data Fig. 4e、5b–d；PDF 第 2 页正文','计算树提示神经元与胶质相关祖细胞分支至早在 E13.5 可辨；早期胶质分支包含仍保留 RG 特征的 AP。'],
+ event_E13_5_mge:['trajectory','direct_observation','Fig. 1b–d；PDF 第 1 页正文','本研究从 E13.5 检测到 MGE 来源相关中间神经元；该群体被排除于主要皮层轨迹。'],
+ event_E13_5_modalities:['trajectory','context','Fig. 1、2a、4a；PDF 第 1–4 页及相应 Methods','E13.5 的组织采样包含 scRNA-seq、Slide-seq v2 与 scATAC-seq；不同模态不自动构成谱系验证。'],
+ event_E14_5_upper_layers:['trajectory','context','Fig. 1a；PDF 第 1 页 Comprehensive atlas 段落','作者以 E14.5–E17.5 概括第 4 层及第 2/3 层兴奋性神经元生成时段；不据此划出互斥的单日边界。'],
+ event_E14_5_identity:['trajectory','relationship_support','Fig. 3a、c；Extended Data Fig. 5；PDF 第 3 页正文','分析支持投射神经元亚型在有丝分裂后分化；不据单个祖细胞 marker 指定最终命运。'],
+ event_E15_5_migration:['db_migration','direct_observation','Fig. 2b；PDF 第 2 页正文与图注','E15.5 迁移／未成熟兴奋性神经元重聚类为五个亚状态，Tangram 映射显示径向顺序；不表示五种固定细胞类型。'],
+ event_E15_5_cge:['trajectory','direct_observation','Fig. 1b–d；PDF 第 1 页正文','本研究从 E15.5 检测到 CGE 来源相关群体；不把首次采样检测当作出生时间。'],
+ event_E16_5_continuity:['trajectory','context','Fig. 1b–c；PDF 第 2 页图注','E16.5 是 scRNA-seq 时间序列中的采样点；没有本期 Slide-seq v2，不能据相邻切片补出本期实测空间。'],
+ event_E16_5_upper_layers:['trajectory','context','Fig. 1a；PDF 第 1 页正文','仅对应 E14.5–E17.5 的作者概括时段，不是 E16.5 独有事件。'],
+ event_E17_5_opc:['db_glia_e17','direct_observation','Fig. 1b–c；PDF 第 1 页正文','本研究 E17.5 样本首次识别 OPC；不说明整个脑此前不存在 OPC。'],
+ event_E17_5_astro:['db_glia_e17','direct_observation','Fig. 1b–c；PDF 第 1 页正文','本研究 E17.5 样本首次识别 astrocytes；不表示此时已完成成熟。'],
+ event_E18_5_chromatin:['trajectory','context','Fig. 4a；PDF 第 4 页正文与图注','scATAC-seq 实际采样时期为 E13.5、E15.5、E18.5；不由染色质轨迹推定实际谱系。'],
+ event_P0_eomes_expression:['p0eomes','direct_observation','Li Fig. 4A；PDF 第 7 页','直接支持 P0 小鼠皮层 SVZ 的 EOMES 表达；不是 IP 身份或后代命运的完整鉴定。'],
+ event_P0_eomes_followup:['eomesFate','condition_observation','Li Fig. 4B–G；PDF 第 7 页；Methods: Tamoxifen labeling，第 12 页','E17/P0 电转及 P0/P1 诱导标记后的群体后代观察。图中标 P20，Methods 写诱导后 20 天，P1 组精确日龄保留歧义。'],
+ event_P0_erk_intervention:['p0erk','condition_observation','Zhang Fig. 4D–E；PDF 第 7 页','P0 Emx1-Cre;Map2k1/2 双条件敲除与对照比较；FOXJ1/CRYAB 表达结果不能写成正常 P0 成熟室管膜状态。'],
+ event_P1_deep_layers:['db_deep_p1','direct_observation','Fig. 2a；Extended Data Fig. 3d–e；PDF 第 2 页正文','P1 多个深层投射神经元群体的计算空间映射；near-projecting 身份为推定。'],
+ event_P1_callosal:['db_deep_p1','relationship_support','Extended Data Fig. 5g–h；PDF 第 3 页正文','轨迹从 P1 区分相关 CPN 分支，P1 Slide-seq 支持位置差异；不是克隆追踪。'],
+ event_P4_identity:['db_terminal_p4','direct_observation','Fig. 3a；Extended Data Fig. 5g–h；PDF 第 3 页正文','P4 时 L5/6 CPN 被划为两个群；不能把该分析分群当作成熟终点。'],
+ event_P4_trajectory:['db_terminal_p4','relationship_support','Fig. 3a 图注；PDF 第 3 页','URD 以 E10.5 早期祖细胞为根、P4 群体为末端；拟时序不等于实际日龄。']
+};
+for(const [id,[evidenceId,role,location,scope]] of Object.entries(reviewedEventClaims)){
+ const record=eventAssociations[id]||={};
+ record.evidenceIds=[...new Set([...(record.evidenceIds||[]),evidenceId])];
+ record.evidenceLinks=[{evidenceId,role,location,scope}];
+}
+// 作者在正文明确概括的范围以范围字符串保存，不离散成新增事件。
+for(const [id,stageRange] of [
+ ['event_E12_5_deep_layers','E12.5–E13.5（作者概括）'],
+ ['event_E14_5_upper_layers','E14.5–E17.5（作者概括）'],
+ ['event_E16_5_upper_layers','E14.5–E17.5（作者概括）']
+])eventAssociations[id].temporalContext={...eventAssociations[id].temporalContext,stageRange};
+Object.assign(evidenceNotes.rgModel,{location:'Fig. 1A–B、7A、7C；PDF 第 3、11 页',supportScope:'Fig. 7A 为小鼠综合示意，7B 为人 GW22，不能合并为同一物种或同一日龄的谱系。'});
+Object.assign(evidenceNotes.opcOrigin,{location:'Fig. 3k–n（P2）、5f–j（P14–16）；Methods: Experimental animals（PDF 第 13 页）',supportScope:'背侧 Emx1 与特定 Nkx2.1 来源策略分别解释；不包含未调查的 Gsh2 来源。'});
+Object.assign(evidenceNotes.p0eomes,{supportScope:'Li 论文主要对象为雪貂；本站本条仅使用 Fig. 4A 的小鼠结果。'});
+Object.assign(evidenceNotes.eomesFate,{supportScope:'本站仅使用 Fig. 4 的小鼠群体标记实验，不借用雪貂 Fig. 6 的中间状态证明小鼠必经路径。'});
+
+// 观察主题只整理已经核对的展示条目，不表达细胞的存在区间或新增关系。
+const overviewTracks = [
+ {id:'progenitors',name:'祖细胞与转录状态',events:['event_E10_5_ap','event_E10_5_ip','event_E13_5_branches']},
+ {id:'neurons',name:'神经元分化与迁移',events:['event_E11_5_cajal_retzius','event_E12_5_continuity','event_E12_5_deep_layers','event_E13_5_mge','event_E14_5_upper_layers','event_E15_5_migration','event_E15_5_cge','event_P1_deep_layers','event_P1_callosal','event_P4_identity','event_P4_trajectory']},
+ {id:'glia',name:'胶质相关观察',events:['event_E17_5_opc','event_E17_5_astro']},
+ {id:'independent',name:'独立研究与实验条件',events:['event_P0_eomes_expression','event_P0_eomes_followup','event_P0_erk_intervention']}
+];
