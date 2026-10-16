@@ -323,3 +323,9 @@ button.scene-key-label{display:block;padding:2px 0;text-align:left;color:#285887
 .evidence-facts dt{color:#526988}.selection-dialog h2{font:600 22px/1.6 var(--sans);margin:12px 0}.selection-dialog h3{font:600 13px/1.7 var(--sans);margin:22px 0 8px;color:#466387}.selection-dialog p{font-size:14px;line-height:1.9}.selection-dialog .atlas-detail-note{font-size:12px;color:#526988}
 @media(max-width:1024px){body[data-page=lineage].has-selection{padding-bottom:100px}.selection-feedback:not([hidden]){display:flex;align-items:center;gap:12px;position:fixed;z-index:25;bottom:max(12px,env(safe-area-inset-bottom));left:24px;right:24px;background:#f7faff;border:1px solid #afc2dc;padding:12px 16px;border-radius:5px}.selection-feedback-name{min-width:0;flex:1;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.selection-feedback button{font-size:13px;white-space:nowrap;padding:9px 3px;color:#235589}.selection-feedback .selection-feedback-clear{font-size:12px;color:#526988}.lineage-workspace .atlas-graph-scroll{scroll-margin-top:150px}}
 @media(max-width:600px){.selection-feedback:not([hidden]){left:12px;right:12px;padding:10px 12px;gap:9px}.selection-feedback-name{font-size:12px}button.scene-pin{width:28px;height:28px}.lineage-workspace .atlas-map-heading p{font-size:12px}.lineage-workspace .page-intro{padding-top:18px}}
+
+/* 支持范围的限制说明不使用直接观察的实心标记。 */
+[data-kind=limitation]{--record-color:#7c8798!important}[data-kind=limitation]:before{background:transparent;border-radius:0}
+
+/* 中屏首页也将 12 时期的横向浏览限制在时间轴内部。 */
+@media(max-width:1180px){body[data-page=home] .timeline{min-width:0;overflow-x:auto;justify-content:flex-start;scrollbar-width:thin}body[data-page=home] .stage-button{flex:0 0 76px}body[data-page=home] .timeline:before{left:0;right:auto;width:912px}}

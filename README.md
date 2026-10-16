@@ -10,7 +10,7 @@
 - 三种独立关系视图：转录状态、RG 分化模型、OPC 来源。点击 Cell 或 Relation，联动上下游、解释和 Evidence；不把三种视图合并成统一真实谱系。
 - 分类搜索 Stage、Cell/State、Relation、Event、Reference 和 relationship view；marker 文本命中只返回 Cell。
 - stage/view/cell/relation URL、刷新、前进和后退恢复；Cell 与 Relation 互斥。旧 URL 同含二者时 Relation 优先。
-- 27 个 Cell/State、14 条 Relation、36 条展示 Event、13 个 Evidence record、5 篇论文。Evidence 数量不是论文数或可信度。
+- 27 个 Cell/State、14 条 Relation、36 条展示 Event、19 个 Evidence record、11 篇论文。Evidence 数量不是论文数或可信度。
 - 细胞与 marker 说明，含 Eomes 的围出生期限制。
 - References 仅显示论文题目、主要作者、期刊及发表年份，点击题目打开原文。
 - 正文不显示引用编号、逐条来源说明及来源宣传文案；数据文件继续保留来源关系。
@@ -81,3 +81,9 @@ python3 -m http.server 8766 --bind 127.0.0.1 --directory .pages-output
 - E12.5–E13.5 和 E14.5–E17.5 保存为作者概括范围；P0 后代随访没有填写 P0 观察时间。
 
 详细核对范围与维护说明见 [阅读结构与证据核对说明.md](阅读结构与证据核对说明.md)。本地截图、数据回归和浏览器检查结果位于 `output/阅读结构更新_20261015/`，不发布到 Pages。
+
+## 2026-10-16 PubMed 补证
+
+新增 Englund 2005、Telley 2019、Gao 2014、Llorca 2019、Bright 2025、Kessaris 2006 六篇原始研究及六条独立 Evidence。摘要级记录只补充背景或限制；仅 Englund 的 E14.5 指定图注补充 AP 中相关 RG 群体和 IP 的直接组织观察。27 Cell、14 Relation、36 Event、关系类型、marker 字符串及 P0 时间边界保持不变。
+
+References 继续只显示题目、主要作者、期刊和年份；Evidence 内可查看 PubMed 链接与核对范围。没有下载 PDF、XML 或原始数据，也没有将摘要当作全文审查。具体关联及未核对内容见 [PubMed补充证据说明.md](PubMed补充证据说明.md)。

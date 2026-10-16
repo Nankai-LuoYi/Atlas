@@ -85,7 +85,7 @@ for(const [key,text] of Object.entries(cellCopy))cells[key].text=text;
 
 // 仅建立现有条目的索引；markers 保持展示字符串，不解析为基因。
 const uniqueEvidenceIds=ids=>[...new Set(ids||[])];
-for(const [id,c] of Object.entries(cells))Object.assign(c,{id,name:c.title,description:c.text,region:c.region||null,evidenceLinks:cellEvidenceLinks[id]||[],stageEvidenceLinks:c.stageEvidenceLinks||[]});
+for(const [id,c] of Object.entries(cells))Object.assign(c,{id,name:c.title,description:c.text,region:c.region||null,evidenceLinks:cellEvidenceLinks[id]||[],stageEvidenceLinks:[...(c.stageEvidenceLinks||[]),...(cellStageEvidenceAdditions[id]||[])]});
 for(const id of ['astro','opc'])cells[id].stageEvidenceLinks.push({stage:'E17.5',evidenceId:'db_glia_e17',role:'direct_observation'});
 const events = {};
 for(const stage of stages){
@@ -227,8 +227,8 @@ function showEvidence(keys,cellId=null,eventId=null,focusStage=null){
   const record=evidenceNotes[id];
   const links=event?(event.evidenceLinks||[]).filter(link=>link.evidenceId===id):cellId?(cells[cellId]?.evidenceLinks||[]).filter(link=>link.evidenceId===id):focusStage?stageData[focusStage].events.flatMap(item=>item.evidenceLinks||[]).filter(link=>link.evidenceId===id):[];
   const claim=links.map(link=>`<div class="evidence-claim"><strong>${escapeHTML(evidenceRoles[link.role])}</strong><p>${escapeHTML(link.scope)}</p>${link.location?`<p class="evidence-location">${escapeHTML(link.location)}</p>`:''}</div>`).join('');
-  const fields=[['证据类型',record.type],['物种',record.species],['脑区／取材范围',record.region],['发育时间',record.stage],['标记／干预时间',record.label],['观察时间',record.readout],['实验条件',record.condition],['适用范围',record.supportScope],['限制',record.limit],['原文位置',record.location]];
-  const paperHtml=[...new Set(record.refs||[])].map(paperById).filter(Boolean).map(paper=>`<a href="https://doi.org/${encodeURI(paper.doi)}" target="_blank" rel="noopener noreferrer">${escapeHTML(paper.title)} ↗</a><p>${escapeHTML(paper.authors)} · ${escapeHTML(paper.journal)} ${escapeHTML(paper.year)}</p><a class="evidence-reference" href="${siteBase}references/#ref-${paper.id}">查看参考文献 →</a>`).join('<br>');
+  const fields=[['核对范围',record.reviewLevel],['证据类型',record.type],['物种',record.species],['脑区／取材范围',record.region],['发育时间',record.stage],['标记／干预时间',record.label],['观察时间',record.readout],['实验条件',record.condition],['适用范围',record.supportScope],['限制',record.limit],['原文位置',record.location]];
+  const paperHtml=[...new Set(record.refs||[])].map(paperById).filter(Boolean).map(paper=>`<a href="https://doi.org/${encodeURI(paper.doi)}" target="_blank" rel="noopener noreferrer">${escapeHTML(paper.title)} ↗</a><p>${escapeHTML(paper.authors)} · ${escapeHTML(paper.journal)} ${escapeHTML(paper.year)}</p><a class="evidence-reference" href="${siteBase}references/#ref-${paper.id}">查看参考文献 →</a>${paper.pmid?` · <a href="https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}/" target="_blank" rel="noopener noreferrer">PubMed ↗</a>`:''}`).join('<br>');
   return `<article class="evidence-record" data-evidence-id="${id}"><h3>${escapeHTML(record.title)}</h3>${claim}<p class="evidence-finding">${escapeHTML(record.finding)}</p><dl class="evidence-facts">${fields.filter(([,v])=>v).map(([label,value])=>`<div><dt>${label}</dt><dd>${escapeHTML(value)}</dd></div>`).join('')}${paperHtml?`<div><dt>论文</dt><dd>${paperHtml}</dd></div>`:''}</dl></article>`;
  }).join('');
  const back=event?`<button class="text-link" data-atlas-event="${event.id}">← 返回本条内容</button>`:state.selectedCell||state.selectedRelation?'<button class="text-link" data-return-selection>← 返回对象详情</button>':'';
@@ -493,9 +493,10 @@ function claimKind(event){
  const role=event.evidenceLinks?.[0]?.role;
  if(role==='condition_observation')return event.id.endsWith('intervention')?'intervention':'followup';
  if(role==='direct_observation')return 'observation';
+ if(role==='limitation')return 'limitation';
  return ['context','relationship_support'].includes(role)?'context':'unclassified';
 }
-const claimKindLabels={observation:'采样观察／映射',context:'计算轨迹／作者概括',followup:'标记后随访',intervention:'干预对照',unclassified:'支持范围待核对'};
+const claimKindLabels={observation:'采样观察／映射',context:'轨迹／时段／背景',followup:'标记后随访',intervention:'干预对照',unclassified:'支持范围待核对',limitation:'解释边界'};
 function overviewEventButton(event,className='observation-record'){
  const button=atlasElement('button',className,event.title);button.dataset.atlasEvent=event.id;button.dataset.kind=claimKind(event);
  button.setAttribute('aria-label',event.displayStage+'：'+event.title+'；'+claimKindLabels[claimKind(event)]+'，查看支持范围');
@@ -550,13 +551,13 @@ function renderContinuousAtlas(){
    const cell=atlasElement('div','observation-slot');cell.setAttribute('role','cell');cell.classList.toggle('is-context-stage',stage===state.stage);
    const records=track.events.map(id=>events[id]).filter(event=>event.displayStage===stage);
    for(const event of records)cell.append(overviewEventButton(event));
-   if(!records.length){const empty=atlasElement('span','observation-empty','—');empty.setAttribute('aria-label',stage+' 本主题暂未整理对应记录');cell.append(empty);}
+   if(!records.length){const empty=atlasElement('span','observation-empty','—');empty.setAttribute('aria-label',stage+' 本主题概览未列展示条目');cell.append(empty);}
    row.append(cell);
   }
   grid.append(row);
  }
  scroll.append(grid);root.append(scroll);
- atlasParagraph(root,'空白为本站暂未整理的对应记录。轨迹与时段概括不表示逐日实测；P0 独立研究的随访和干预分开阅读。','overview-boundary');
+ atlasParagraph(root,'概览按选定展示条目编排；空白不表示没有相关细胞或文献。轨迹与时段概括非逐日实测；P0 随访和干预分开阅读。','overview-boundary');
  const reading=atlasElement('section','overview-reading');reading.id='overview-reading';reading.setAttribute('aria-label','当前时期阅读');
  const readingTop=atlasElement('div','overview-reading-heading');readingTop.append(atlasElement('h2','','本期阅读'),atlasElement('span','',state.stage));
  const stageLink=atlasElement('a','text-link','查看本期场景与关系 →');stageLink.href=explorerHref('lineage/');readingTop.append(stageLink);reading.append(readingTop);appendStageReading(reading,state.stage);root.append(reading);

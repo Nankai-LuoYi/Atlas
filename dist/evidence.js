@@ -289,3 +289,50 @@ const overviewTracks = [
  {id:'glia',name:'胶质相关观察',events:['event_E17_5_opc','event_E17_5_astro']},
  {id:'independent',name:'独立研究与实验条件',events:['event_P0_eomes_expression','event_P0_eomes_followup','event_P0_erk_intervention']}
 ];
+
+
+// 2026-10-16 PubMed 补证。摘要级记录不补写未核对的具体日龄；图注级观察单独限定。
+const pubmedPapers = [
+ {id:6,short:'Englund 等 · 2005',title:'Pax6, Tbr2, and Tbr1 are expressed sequentially by radial glia, intermediate progenitor cells, and postmitotic neurons in developing neocortex',authors:'Englund C, Fink A, Lau C, et al.',journal:'Journal of Neuroscience',year:'2005',volume:'25(1), 247–251',doi:'10.1523/JNEUROSCI.2899-04.2005',pmid:'15634788',tags:['小鼠','E14.5','祖细胞表达观察'],topics:['timeline'],summary:'E14.5 皮层的表达与分裂位置观察；不作为完整谱系追踪。',facts:[['核对范围','PubMed 摘要及 Fig. 1–3 图注']],boundary:'Fig. 2A–S 为组织观察，2T–V 为体外培养，不能混合。表达序列不代表所有神经元必经 IP；不验证现有 marker 字符串的全部内容。',links:[]},
+ {id:7,short:'Telley 等 · 2019',title:'Temporal patterning of apical progenitors and their daughter neurons in the developing neocortex',authors:'Telley L, Agirman G, Prados J, et al.',journal:'Science',year:'2019',volume:'364(6440), eaav2522',doi:'10.1126/science.aav2522',pmid:'31073041',tags:['小鼠','AP 时间状态','单细胞'],topics:['timeline'],summary:'AP 的年龄相关分子状态及其后代的时间性分化背景。',facts:[['核对范围','PubMed 摘要']],boundary:'本轮未逐图核对全文及取样日龄；不生成直接时期覆盖，也不将 PRC2 干预作为正常发育事件。',links:[]},
+ {id:8,short:'Gao 等 · 2014',title:'Deterministic progenitor behavior and unitary production of neurons in the neocortex',authors:'Gao P, Postiglione MP, Krieger TG, et al.',journal:'Cell',year:'2014',volume:'159(4), 775–788',doi:'10.1016/j.cell.2014.10.027',pmid:'25417155',tags:['小鼠','MADM','克隆谱系'],topics:['lineage'],summary:'以 MADM 分析 RGP 的神经元后代与克隆输出。',facts:[['核对范围','PubMed 摘要']],boundary:'保留作者对其方法和样本的解释；不把输出规律推广为所有 AP/RG 的固定规则。Otx1 干预不进入正常时间轴。',links:[]},
+ {id:9,short:'Llorca 等 · 2019',title:'A stochastic framework of neurogenesis underlies the assembly of neocortical cytoarchitecture',authors:'Llorca A, Ciceri G, Beattie R, et al.',journal:'eLife',year:'2019',volume:'8, e51381',doi:'10.7554/eLife.51381',pmid:'31736464',tags:['小鼠','克隆谱系','谱系异质性'],topics:['lineage'],summary:'克隆大小与层分布具有异质性，实验与随机模型分别解释。',facts:[['核对范围','PubMed 摘要及 Fig. 3–4 图注']],boundary:'Fig. 3–4 的 E12.5 标记与 P21 后代观察分开；P21 不扩展本站时间轴。随机模型并非逐条路径的实验验证。',links:[]},
+ {id:10,short:'Bright 等 · 2025',title:'Temporal control of progenitor competence shapes maturation in GABAergic neuron development in mice',authors:'Bright AR, Kotlyarenko Y, Neuhaus F, et al.',journal:'Nature Neuroscience',year:'2025',volume:'28(8), 1663–1675',doi:'10.1038/s41593-025-01999-y',pmid:'40629142',tags:['小鼠','神经节隆起','GABAergic','含干预'],topics:['interneuron'],summary:'神经节隆起祖细胞的时间进程与 GABAergic 后代成熟能力。',facts:[['核对范围','PubMed 摘要']],boundary:'GE 来源研究不等于已在皮层取样；不把 GABAergic 投射神经元全部等同于皮层中间神经元。正常观察、移植和扰动分开，不证明 Di Bella 主皮层轨迹包含这些细胞。',links:[]},
+ {id:11,short:'Kessaris 等 · 2006',title:'Competing waves of oligodendrocytes in the forebrain and postnatal elimination of an embryonic lineage',authors:'Kessaris N, Fogarty M, Iannarelli P, et al.',journal:'Nature Neuroscience',year:'2006',volume:'9(2), 173–179',doi:'10.1038/nn1620',pmid:'16388308',tags:['小鼠','OPC 来源','遗传命运示踪'],topics:['opc'],summary:'遗传命运示踪支持前脑 OLP 来源波次；消融补偿属于另一个实验条件。',facts:[['核对范围','PubMed 摘要']],boundary:'不从摘要补写各波次具体日龄。其出生后皮层波次不能覆盖 Winkler 2018 的胚胎期背侧证据，更不能设定统一 P0 起点。消融结果不是正常时间轴。',links:[]}
+];
+papers.push(...pubmedPapers);
+Object.assign(evidenceNotes,{
+ englund_e14:{title:'E14.5 祖细胞的表达与分裂位置',refs:[6],type:'组织表达与细胞周期观察',species:'小鼠',region:'新皮层 VZ／SVZ；此条不建立完整空间图谱',readout:'E14.5',condition:'仅使用 Fig. 1、2A–S、3 的组织切片观察；排除 Fig. 2T–V 体外培养',location:'PubMed 摘要及 Fig. 1–3 图注',reviewLevel:'摘要与图注已核对；未逐图核查全文及全部方法',finding:'E14.5 皮层可见 Pax6 阳性 VZ 祖细胞及 Tbr2 阳性的非表面分裂中间祖细胞。',supportScope:'支持 AP 中放射状胶质相关群体及 IP 的局部观察；不验证整个 Cell 条目的所有 marker 或属性。',limit:'表达序列不是克隆谱系；Tbr2 不是每条直接神经发生路径的必经标记，不能把全部 Eomes 阳性细胞等同于固定 IP 身份。'},
+ telley_temporal:{title:'AP 及其后代的时间性分子状态',refs:[7],type:'单细胞转录组与时间性分子状态分析',species:'小鼠',region:'发育中新皮层；AP 及其神经元后代',condition:'此条仅使用摘要中的时间状态结论，不采用 PRC2 干预结果',location:'PubMed Abstract',reviewLevel:'摘要级核对；精确取样日龄和全文方法待核对',finding:'研究支持 AP 的年龄相关分子状态与后代分化程序相联系。',limit:'不提供本站任一具体日龄的直接观察；时间性转录状态不等于每条图中关系已被克隆验证。'},
+ gao_clonal:{title:'MADM 观察的 RGP 神经元后代',refs:[8],type:'MADM 克隆谱系与作者解释',species:'小鼠',region:'新皮层',condition:'仅采用 RGP 神经元后代的基本克隆结论；不采用 Otx1 缺失结果',location:'PubMed Abstract',reviewLevel:'摘要级核对；具体标记和取材日龄未结构化',finding:'研究在其 MADM 条件下分析 RGP 的神经元克隆输出，提出有序的神经发生程序解释。',limit:'不能推广为所有 AP 或 RG 的恒定输出规则；需与 Llorca 的异质性结果及不同实验方法并列阅读。'},
+ llorca_clonal:{title:'皮层祖细胞克隆输出的异质性',refs:[9],type:'克隆谱系观察与数学模型（分别解释）',species:'小鼠',region:'新皮层',label:'Fig. 3–4：E12.5 他莫昔芬标记',readout:'Fig. 3–4：P21；超出本站 E10.5–P4 展示范围',condition:'MADM 与诱导报告策略分别分析；模型解释不是额外的实验追踪',location:'PubMed Abstract；Fig. 3–4 图注',reviewLevel:'摘要及指定图注已核对；未逐项核对全文',finding:'不同克隆呈现多样的大小与层分布，数据可与随机神经发生模型相容。',limit:'E12.5 是标记时间，P21 是后代观察时间，不能把成熟克隆画在 E12.5。与 Gao 的作者解释并列，不据此宣布某个模型适用于所有祖细胞。'},
+ bright_ge:{title:'神经节隆起祖细胞的时间进程与成熟能力',refs:[10],type:'多模态与多种实验策略；本条为时间状态背景',species:'小鼠',region:'腹侧端脑神经节隆起及其 GABAergic 后代',condition:'正常进程、移植、谱系策略和基因扰动不能混为同一条件；本条不引用干预表型',location:'PubMed Abstract',reviewLevel:'摘要级核对；各实验具体时期和子区域未结构化',finding:'作者区分成熟能力与产生不同转录身份的分化能力，报告二者具有不同的时间变化。',limit:'不能将 GE 取样当作当前时期皮层中的直接观察；不等于所有 GABAergic 后代都是皮层中间神经元，也不支持其加入 Di Bella 主皮层轨迹。'},
+ kessaris_opc:{title:'前脑 OLP 的多来源命运示踪背景',refs:[11],type:'Cre-lox 遗传命运示踪',species:'小鼠',region:'前脑；MGE/AEP、LGE/CGE 及皮层来源按原研究分别解释',condition:'本条只用来源示踪背景；白喉毒素消融后的补偿结果不用于正常发育',location:'PubMed Abstract',reviewLevel:'摘要级核对；具体波次日龄未核对',finding:'研究支持前脑 OLP 具有不同发育来源，并可进入皮层。',limit:'不推断任一本站时期已直接观察到特定来源；作者的出生后皮层波次不设为统一起点，需与胚胎期背侧来源证据一起阅读。'}
+});
+function addPubmedCellLink(id,evidenceId,role,scope){cellEvidenceLinks[id].push({evidenceId,role,scope});}
+addPubmedCellLink('ap','englund_e14','direct_observation','E14.5 Pax6 阳性 VZ／放射状胶质相关群体的表达观察；不覆盖 AP 全部状态或所有 marker。');
+addPubmedCellLink('ip','englund_e14','direct_observation','E14.5 组织切片中的 Tbr2 阳性非表面分裂 IPC；不等同于 P0 全部 Eomes 阳性细胞。');
+addPubmedCellLink('ap','telley_temporal','context','AP 时间性分子状态背景；摘要级核对，不建立具体时期覆盖。');
+addPubmedCellLink('ap','gao_clonal','context','RGP 的克隆后代背景，不证明 AP 条目的全部状态或本站每条边。');
+addPubmedCellLink('pn','gao_clonal','context','RGP 神经元后代的克隆背景，不验证每种投射亚型或全部 marker。');
+addPubmedCellLink('ap','llorca_clonal','limitation','克隆异质性限制统一、确定性的祖细胞输出解释；P21 后代不是 E12.5 已成熟。');
+addPubmedCellLink('pn','llorca_clonal','context','克隆大小与层分布背景，不将层分布自动等同于本站分子投射亚型。');
+addPubmedCellLink('interneuron','bright_ge','context','腹侧 GE 来源的成熟能力背景，不证明具体时期已迁入皮层，亦不加入主要皮层转录轨迹。');
+addPubmedCellLink('opc','kessaris_opc','context','前脑多来源背景；不指定本站某个时期或全部背侧／腹侧来源的首次出现。');
+// 只有逐时期明确核对的直接组织观察可补充 Cell coverage；不从摘要插值。
+const cellStageEvidenceAdditions={
+ ap:[{stage:'E14.5',evidenceId:'englund_e14',role:'direct_observation'}],
+ ip:[{stage:'E14.5',evidenceId:'englund_e14',role:'direct_observation'}]
+};
+function addPubmedEventLink(id,evidenceId,role,scope){
+ const event=eventAssociations[id]||={};
+ event.evidenceIds=[...new Set([...(event.evidenceIds||[]),evidenceId])];
+ (event.evidenceLinks||=[]).push({evidenceId,role,scope,location:evidenceNotes[evidenceId].location});
+}
+addPubmedEventLink('event_E14_5_continuity','englund_e14','context','本条的 E14.5 组织观察支持祖细胞表达状态差异，不独立证明动态转换或唯一必经路线。');
+addPubmedEventLink('event_E14_5_continuity','telley_temporal','context','独立的 AP 时间性分子状态背景；不是本展示时期的直接采样证据。');
+addPubmedEventLink('event_E11_5_progenitors','telley_temporal','context','用于理解 AP 状态随发育变化；未核对本研究 E11.5 取样，不作为 E11.5 直接证据。');
+// 既有阅读提示的限制：标记时间与后代观察、克隆结果与作者模型都不合并。
+addPubmedEventLink('event_P4_trajectory','gao_clonal','context','与计算轨迹对照阅读的克隆研究背景，不补充 P4 直接覆盖或固定输出数量。');
+addPubmedEventLink('event_P4_trajectory','llorca_clonal','limitation','P21 克隆异质性限制将关系图读成所有祖细胞的固定程序；不是 P4 后代观察。');
+addPubmedEventLink('event_E17_5_detection','kessaris_opc','context','前脑来源研究与当前皮层采样的检测时刻是不同问题，不把来源波次换算为 E17.5 起源时间。');
