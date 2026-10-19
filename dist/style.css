@@ -329,3 +329,33 @@ button.scene-key-label{display:block;padding:2px 0;text-align:left;color:#285887
 
 /* 中屏首页也将 12 时期的横向浏览限制在时间轴内部。 */
 @media(max-width:1180px){body[data-page=home] .timeline{min-width:0;overflow-x:auto;justify-content:flex-start;scrollbar-width:thin}body[data-page=home] .stage-button{flex:0 0 76px}body[data-page=home] .timeline:before{left:0;right:auto;width:912px}}
+
+/* 图文阅读：复用既有场景，所有时期持续可见，详细记录渐进展开。 */
+.visual-journey{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px 22px;position:relative}
+.journey-moment{display:flex;flex-direction:column;text-align:left;min-width:0;padding:0 0 12px;border-bottom:2px solid #e3eaf3;color:#294d75;background:white}
+.journey-moment-top{display:flex;align-items:center;gap:9px;width:100%;padding:0 7px}
+.journey-moment-top .stage-illustration{width:46px;height:46px;margin:0;opacity:1;flex:none}
+.journey-moment-top strong{font-size:15px;font-weight:600}.journey-moment-top small{margin-left:auto;color:#8297b1;font-size:11px}
+.journey-scene{display:block;width:100%;aspect-ratio:3/2;background-size:200% 200%;background-repeat:no-repeat}
+.journey-caption{font-size:12px;line-height:1.65;padding:6px 8px 0;min-height:46px}
+.journey-moment:hover{background:#f6f9fd;border-color:#a1b8d4}.journey-moment[aria-pressed=true]{border-color:#376ba7;background:#f0f5fc}
+.journey-moment:focus-visible{outline:2px solid #376ba7;outline-offset:3px}
+.journey-note{font-size:12px;color:#607690;margin:14px 0 24px;line-height:1.75}
+.overview-reading{padding-top:22px}.illustrated-reading{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:40px;align-items:start}
+.reading-visual{min-width:0}.reading-visual figure{margin:0}.reading-visual .scene-canvas{max-width:none}
+.reading-visual .scene-key{gap:12px 20px;margin:8px 0 12px;padding-top:12px}.reading-visual .scene-key p{font-size:11px}
+.reading-visual figcaption{font-size:11px;line-height:1.7;color:#607690}.reading-visual figcaption p{margin:4px 0}
+/* 时期限制在相邻说明列常显，避免相同段落在图注中重复。 */
+.journey-swipe{display:none}
+.reading-copy{padding:22px 0}.reading-copy h3{font-size:24px;line-height:1.5;margin:14px 0}.reading-copy .eyebrow{font-size:10px}
+.reading-events{border-top:1px solid #dce6f2;margin-top:24px}
+.reading-event{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid #e5ecf5;padding:15px 0}.reading-event-index{font-size:12px;color:#8a9db8;flex:none}
+.reading-event .overview-event-title{font-size:14px;line-height:1.7}.reading-hint{font-size:12px;line-height:1.7;color:#617995;margin:12px 0 24px}
+.reading-scope{padding-left:14px;border-left:2px solid #c1cfe2;font-size:12px;line-height:1.85;color:#566f8f;margin:0 0 22px}
+.overview-evidence-table{border-top:1px solid #dce6f2}.overview-evidence-table>summary{padding:20px 0;cursor:pointer;color:#365e8f;font-size:14px}
+.overview-evidence-table .overview-time-cell .stage-illustration{display:none}.overview-evidence-table .overview-stage{padding-top:10px}
+@media(max-width:1100px){.visual-journey{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}.illustrated-reading{gap:24px}.reading-copy h3{font-size:21px}}
+@media(max-width:800px){.illustrated-reading{grid-template-columns:1fr}.reading-copy{padding:0 0 12px}.reading-visual .scene-canvas{max-width:620px}.reading-visual .scene-key{grid-template-columns:1fr 1fr}.reading-copy h3{font-size:20px}}
+@media(max-width:600px){.visual-journey{display:flex;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:thin;padding:3px 0 10px}.journey-moment{flex:0 0 170px;scroll-snap-align:center}.journey-caption{min-height:46px}.journey-note{font-size:11px}.reading-visual .scene-key{grid-template-columns:1fr;gap:10px}.reading-copy .overview-stage-summary{font-size:14px}.reading-copy h3{font-size:21px}.overview-reading-heading>a{font-size:12px}.reading-event{padding:13px 0}.reading-event .overview-event-title{min-height:34px;display:flex;align-items:center}}
+
+@media(max-width:600px){.journey-swipe{display:block;color:#607690;font-size:11px;margin:7px 0 0}}

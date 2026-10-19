@@ -336,6 +336,20 @@ function sceneAction(element,target){
  if(target?.cell)element.dataset.cell=target.cell;
  if(target?.event)element.dataset.atlasEvent=target.event;
 }
+// 场景与标注复用同一展示映射；不写入时期证据或细胞身份。
+function createSceneFigure(stage,compact=false){
+ const item=stageScenes[stage];
+ const figure=atlasElement('figure','');const art=atlasElement('div','stage-scene-art');art.setAttribute('role','img');art.setAttribute('aria-label',stage+'：'+item.reading+' 概念示意，非实测组织图。');
+ art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[item.sheet]}")`;art.style.clipPath=item.sheet===2&&item.tile<2?'inset(0 0 5% 0)':'';art.style.backgroundPosition=(item.tile%2)*100+'% '+Math.floor(item.tile/2)*100+'%';const canvas=atlasElement('div','scene-canvas');canvas.append(art);
+ const callouts=document.createElementNS('http://www.w3.org/2000/svg','svg');callouts.setAttribute('viewBox','0 0 100 100');callouts.setAttribute('preserveAspectRatio','none');callouts.setAttribute('aria-hidden','true');callouts.classList.add('scene-callouts');canvas.append(callouts);
+ const key=atlasElement('ol','scene-key');key.setAttribute('aria-label',stage+' 插图标注');
+ for(const [i,[x,y,name,description]] of sceneAnnotations[stage].entries()){
+  const target=sceneTargets[stage]?.[i];const pin=atlasElement(target?'button':'span','scene-pin',String(i+1));if(target){sceneAction(pin,target);pin.setAttribute('aria-label',`${i+1} ${name}，查看相关内容`);pin.setAttribute('aria-pressed',String(target.cell===state.selectedCell));}pin.style.left=(x+4)+'%';pin.style.top=(y-5)+'%';const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('y1',y);line.setAttribute('x2',x+4);line.setAttribute('y2',y-5);callouts.append(line);if(!target)pin.setAttribute('aria-hidden','true');canvas.append(pin);
+  const row=atlasElement('li','');row.append(atlasElement('span','scene-key-number',String(i+1)));const text=atlasElement('div','');const label=atlasElement(target?'button':'strong','scene-key-label',name);if(target){sceneAction(label,target);label.setAttribute('aria-label',name+'，查看相关内容');label.setAttribute('aria-pressed',String(target.cell===state.selectedCell));}text.append(label);atlasParagraph(text,description);row.append(text);key.append(row);
+ }
+ figure.append(canvas,key);
+ const caption=atlasElement('figcaption','');atlasParagraph(caption,item.reading);atlasParagraph(caption,'编号标出代表性示意角色，不是逐个细胞的实验鉴定。AI 辅助插图不按比例，颜色与数量不代表实测。','scene-limit');if(!compact)atlasParagraph(caption,item.limit,'scene-limit');figure.append(caption);return figure;
+}
 function renderStageScene(){
  let scene=$('stage-scene'),model=$('trajectory-model');
  if(!model){
@@ -352,16 +366,7 @@ function renderStageScene(){
  scene.replaceChildren();if(!active)return;
  const item=stageScenes[state.stage];scene.dataset.stage=state.stage;
  const summary=atlasElement('summary','scene-disclosure',state.stage+' · 场景与细胞标注');scene.append(summary);const heading=atlasElement('div','scene-heading');heading.append(atlasElement('span','eyebrow','DEVELOPMENTAL SCENE'),atlasElement('h3','',item.focus));scene.append(heading);
- const figure=atlasElement('figure','');const art=atlasElement('div','stage-scene-art');art.setAttribute('role','img');art.setAttribute('aria-label',state.stage+'：'+item.reading+' 概念示意，非实测组织图。');
- art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[item.sheet]}")`;art.style.clipPath=item.sheet===2&&item.tile<2?'inset(0 0 5% 0)':'';art.style.backgroundPosition=(item.tile%2)*100+'% '+Math.floor(item.tile/2)*100+'%';const canvas=atlasElement('div','scene-canvas');canvas.append(art);
- const callouts=document.createElementNS('http://www.w3.org/2000/svg','svg');callouts.setAttribute('viewBox','0 0 100 100');callouts.setAttribute('preserveAspectRatio','none');callouts.setAttribute('aria-hidden','true');callouts.classList.add('scene-callouts');canvas.append(callouts);
- const key=atlasElement('ol','scene-key');key.setAttribute('aria-label',state.stage+' 插图标注');
- for(const [i,[x,y,name,description]] of sceneAnnotations[state.stage].entries()){
-  const target=sceneTargets[state.stage]?.[i];const pin=atlasElement(target?'button':'span','scene-pin',String(i+1));if(target){sceneAction(pin,target);pin.setAttribute('aria-label',`${i+1} ${name}，查看相关内容`);pin.setAttribute('aria-pressed',String(target.cell===state.selectedCell));}pin.style.left=(x+4)+'%';pin.style.top=(y-5)+'%';const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',x);line.setAttribute('y1',y);line.setAttribute('x2',x+4);line.setAttribute('y2',y-5);callouts.append(line);if(!target)pin.setAttribute('aria-hidden','true');canvas.append(pin);
-  const row=atlasElement('li','');row.append(atlasElement('span','scene-key-number',String(i+1)));const text=atlasElement('div','');const label=atlasElement(target?'button':'strong','scene-key-label',name);if(target){sceneAction(label,target);label.setAttribute('aria-label',name+'，查看相关内容');label.setAttribute('aria-pressed',String(target.cell===state.selectedCell));}text.append(label);atlasParagraph(text,description);row.append(text);key.append(row);
- }
- figure.append(canvas,key);
- const caption=atlasElement('figcaption','');atlasParagraph(caption,item.reading);atlasParagraph(caption,'编号标出代表性示意角色，不是逐个细胞的实验鉴定。AI 辅助插图不按比例，颜色与数量不代表实测。','scene-limit');atlasParagraph(caption,item.limit,'scene-limit');figure.append(caption);scene.append(figure);
+ scene.append(createSceneFigure(state.stage));
  const links=atlasElement('div','scene-objects');links.append(atlasElement('span','','阅读相关对象'));
  for(const id of item.cells){const b=atlasElement('button','text-link',cells[id].name);b.dataset.cell=id;b.setAttribute('aria-pressed',String(state.selectedCell===id));links.append(b);}
  if(!item.cells.length){const b=atlasElement('button','text-link','EOMES 表达观察');b.dataset.evidence='p0eomes';links.append(b);}
@@ -516,9 +521,44 @@ function appendStageReading(parent,stage){
   parent.append(group);
  }
 }
+// 图文总览始终保留全部时期；图像是阅读示意，不是新生物学数据。
+function createVisualJourney(){
+ const journey=atlasElement('div','visual-journey');journey.id='visual-journey';journey.setAttribute('aria-label','12 个时期的图文总览');
+ for(const [i,stage] of stages.entries()){
+  const scene=stageScenes[stage],button=atlasElement('button','journey-moment');
+  button.dataset.overviewStage=stage;button.setAttribute('aria-pressed',String(stage===state.stage));
+  button.setAttribute('aria-label',stage+'，'+scene.focus+'，查看图解');
+  const top=atlasElement('span','journey-moment-top');
+  const embryo=atlasElement('span','stage-illustration');embryo.style.backgroundPosition=((i%6)*20)+'% '+(i<6?0:100)+'%';embryo.setAttribute('aria-hidden','true');
+  top.append(embryo,atlasElement('strong','',stage),atlasElement('small','',String(i+1).padStart(2,'0')));
+  const art=atlasElement('span','journey-scene');art.setAttribute('aria-hidden','true');art.style.backgroundImage=`url("${siteBase}assets/${sceneSheets[scene.sheet]}")`;art.style.backgroundPosition=(scene.tile%2)*100+'% '+Math.floor(scene.tile/2)*100+'%';
+  if(scene.sheet===2&&scene.tile<2)art.style.clipPath='inset(0 0 5% 0)';
+  button.append(top,art,atlasElement('span','journey-caption',scene.focus));journey.append(button);
+ }
+ return journey;
+}
+function appendIllustratedReading(parent,stage){
+ const item=stageScenes[stage],data=stageData[stage];
+ const layout=atlasElement('div','illustrated-reading');
+ const visual=atlasElement('div','reading-visual');visual.append(createSceneFigure(stage,true));
+ const copy=atlasElement('div','reading-copy');copy.append(atlasElement('span','eyebrow','READ THE DEVELOPMENT'),atlasElement('h3','',item.focus));
+ atlasParagraph(copy,data.description,'overview-stage-summary');
+ const list=atlasElement('div','reading-events');
+ for(const [i,event] of data.events.entries()){
+  const row=atlasElement('div','reading-event');row.append(atlasElement('span','reading-event-index',String(i+1).padStart(2,'0')),overviewEventButton(event,'overview-event-title'));
+  list.append(row);
+ }
+ copy.append(list);atlasParagraph(copy,'点选事件，查看完整说明与文献依据。','reading-hint');
+ // 时期特有边界始终可见，其余完整解释仍保留在下方展开阅读中。
+ atlasParagraph(copy,item.limit,'reading-scope');
+ const link=atlasElement('a','text-link','探索细胞关系 →');link.href=explorerHref('lineage/');copy.append(link);
+ layout.append(visual,copy);parent.append(layout);
+}
 function renderContinuousAtlas(){
  let root=$('atlas-overview');
  const focusedStage=document.activeElement?.dataset.overviewStage;
+ const focusedInTable=!!document.activeElement?.closest('#overview-map-scroll');
+ const tableOpen=$('overview-evidence-table')?.open||false;
  const previousScroll=$('overview-map-scroll')?.scrollLeft||0;
  if(!root){root=atlasElement('section','atlas-overview wrap');root.id='atlas-overview';root.setAttribute('aria-label','E10.5 至 P4 发育全程');$('home-page').before(root);}
  $('home-page').hidden=true;
@@ -530,9 +570,13 @@ function renderContinuousAtlas(){
  const top=atlasElement('div','overview-heading');top.id='timeline';
  top.append(atlasElement('span','eyebrow','DEVELOPMENT THROUGH TIME'),atlasElement('h2','','从早期祖细胞，到出生后细胞分化'));
  const link=atlasElement('a','text-link','查看细胞关系 →');link.href=explorerHref('lineage/');top.append(link);root.append(top);
+ root.append(createVisualJourney());
+ const swipe=atlasElement('p','journey-swipe','左右滑动，浏览全部 12 个时期');root.append(swipe);
+ atlasParagraph(root,'概念插图 · 非实测组织图。时期等距排列不代表等时距；可点选查看标注。','journey-note');
+ const table=atlasElement('details','overview-evidence-table');table.id='overview-evidence-table';table.open=tableOpen;table.append(atlasElement('summary','','按观察主题对照 · 展开记录表'));
  const legend=atlasElement('div','observation-legend');
  for(const [kind,label] of Object.entries(claimKindLabels)){const item=atlasElement('span','',label);item.dataset.kind=kind;legend.append(item);}
- root.append(legend);
+ table.append(legend);
  const scroll=atlasElement('div','overview-map-scroll');scroll.id='overview-map-scroll';scroll.tabIndex=0;scroll.setAttribute('aria-label','完整时间与观察主题，可横向浏览');
  const grid=atlasElement('div','overview-map');grid.setAttribute('role','table');grid.setAttribute('aria-label','各时期已整理的观察记录');
  const head=atlasElement('div','overview-time-row');head.setAttribute('role','row');
@@ -556,20 +600,22 @@ function renderContinuousAtlas(){
   }
   grid.append(row);
  }
- scroll.append(grid);root.append(scroll);
- atlasParagraph(root,'概览按选定展示条目编排；空白不表示没有相关细胞或文献。轨迹与时段概括非逐日实测；P0 随访和干预分开阅读。','overview-boundary');
+ scroll.append(grid);table.append(scroll);
+ atlasParagraph(table,'概览按选定展示条目编排；空白不表示没有相关细胞或文献。轨迹与时段概括非逐日实测；P0 随访和干预分开阅读。','overview-boundary');
  const reading=atlasElement('section','overview-reading');reading.id='overview-reading';reading.setAttribute('aria-label','当前时期阅读');
- const readingTop=atlasElement('div','overview-reading-heading');readingTop.append(atlasElement('h2','','本期阅读'),atlasElement('span','',state.stage));
- const stageLink=atlasElement('a','text-link','查看本期场景与关系 →');stageLink.href=explorerHref('lineage/');readingTop.append(stageLink);reading.append(readingTop);appendStageReading(reading,state.stage);root.append(reading);
+ const readingTop=atlasElement('div','overview-reading-heading');readingTop.append(atlasElement('h2','','时期图解'),atlasElement('span','',state.stage));
+ const stageLink=atlasElement('a','text-link','查看本期场景与关系 →');stageLink.href=explorerHref('lineage/');readingTop.append(stageLink);reading.append(readingTop);appendIllustratedReading(reading,state.stage);root.append(reading,table);
  const all=atlasElement('details','overview-all-reading');all.id='overview-all-reading';all.open=readingOpen;
  all.append(atlasElement('summary','','按时间阅读全部内容 · 12 个时期'));
  for(const stage of stages){const article=atlasElement('article','overview-reading-entry');article.id='moment-'+stage.replace('.','_');appendStageReading(article,stage);all.append(article);}
  root.append(all);
  scroll.scrollLeft=previousScroll;
- if(focusedStage){const button=root.querySelector(`[data-overview-stage="${focusedStage}"]`);button?.focus({preventScroll:true});}
+ if(focusedStage){const button=root.querySelector(`${focusedInTable?'#overview-map-scroll':'#visual-journey'} [data-overview-stage="${focusedStage}"]`);button?.focus({preventScroll:true});}
  // 只滚动内部画布，避免切换阅读时期时把整个页面带走。
  if(scroll.scrollWidth>scroll.clientWidth){const selected=root.querySelector('.overview-stage[aria-pressed=true]');scroll.scrollLeft=Math.max(0,selected.parentElement.offsetLeft-160-(scroll.clientWidth-160-selected.parentElement.offsetWidth)/2);}
- if(!root.dataset.keyboardBound){root.addEventListener('keydown',event=>{const button=event.target.closest('[data-overview-stage]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const index=stages.indexOf(button.dataset.overviewStage);const next=event.key==='Home'?0:event.key==='End'?stages.length-1:Math.max(0,Math.min(stages.length-1,index+(event.key==='ArrowRight'?1:-1)));setState({stage:stages[next]});root.querySelector(`[data-overview-stage="${stages[next]}"]`)?.focus({preventScroll:true});});root.dataset.keyboardBound='true';}
+ const journey=$('visual-journey'),moment=journey.querySelector('[aria-pressed=true]');
+ if(journey.scrollWidth>journey.clientWidth)journey.scrollLeft=Math.max(0,moment.offsetLeft-journey.offsetLeft-(journey.clientWidth-moment.offsetWidth)/2);
+ if(!root.dataset.keyboardBound){root.addEventListener('keydown',event=>{const button=event.target.closest('[data-overview-stage]');if(!button||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const index=stages.indexOf(button.dataset.overviewStage);const next=event.key==='Home'?0:event.key==='End'?stages.length-1:Math.max(0,Math.min(stages.length-1,index+(event.key==='ArrowRight'?1:-1)));const area=button.closest('#visual-journey')?'#visual-journey':'#overview-map-scroll';setState({stage:stages[next]});root.querySelector(`${area} [data-overview-stage="${stages[next]}"]`)?.focus({preventScroll:true});});root.dataset.keyboardBound='true';}
  // 旧 cell / relation 深链接仍可直接打开；不改变全部时期的可见性。
  if(state.selectedRelation)showRelation(state.selectedRelation);
  else if(state.selectedCell)showCell(state.selectedCell,false);
